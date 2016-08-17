@@ -54,6 +54,18 @@ var userSchema = new Schema({
   },
 
   roles: [String],
+
+  status: {
+    value: {
+      type: String,
+      required: true,
+    },
+
+    reason: {
+      type: String,
+      required: true,
+    }
+  }
 });
 
 // takes the connection and options and returns the model
@@ -70,8 +82,13 @@ module.exports = function (conn, app, options) {
 
     return _bcryptCompare(plainTextPassword, hash);
   };
- 
 
+  userSchema.methods.setStatus = function (status, reason) {
+    this.set('status', {
+      value: status,
+      reason: reason,
+    });
+  };
 
   var User = conn.model('User', userSchema);
   

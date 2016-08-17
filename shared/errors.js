@@ -32,11 +32,24 @@ InvalidOption.prototype.name = 'InvalidOption';
 
 
 function ProductNotAvailable(product) {
-
+  InventoryAPIError.call(this, 'product not available');
 }
 util.inherits(ProductNotAvailable, InventoryAPIError);
 ProductNotAvailable.prototype.name = 'ProductNotAvailable';
 
+function EmailTaken(email) {
+  InventoryAPIError.call(this, 'email ' + email + ' already in use');
+
+  this.email = email;
+}
+util.inherits(EmailTaken, InventoryAPIError);
+EmailTaken.prototype.name = 'EmailTaken';
+
+function Unauthorized() {
+  InventoryAPIError.call(this, 'unauthorized');
+}
+util.inherits(Unauthorized, InventoryAPIError);
+Unauthorized.prototype.name = 'Unauthorized';
 
 /**
  * Expose errors
@@ -44,3 +57,5 @@ ProductNotAvailable.prototype.name = 'ProductNotAvailable';
 exports.InventoryAPIError = InventoryAPIError;
 exports.InvalidOption = InvalidOption;
 exports.ProductNotAvailable = ProductNotAvailable;
+exports.EmailTaken = EmailTaken;
+exports.Unauthorized = Unauthorized;

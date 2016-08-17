@@ -9,3 +9,8 @@ exports.RECORD_TYPES = {
   EXIT: 'exit',
   LOSS: 'loss',
 };
+
+exports.USER_STATUSES = {
+  ACTIVE: 'active',
+  DEACTIVATED: 'deactivated',
+};

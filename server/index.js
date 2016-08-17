@@ -10,6 +10,10 @@ function createInventoryAPI(options) {
     throw new Error('mongodbURI is required');
   }
 
+  if (!options.secret) {
+    throw new Error('secret is required');
+  }
+
   // create express app instance
   var app = express();
 
@@ -30,6 +34,8 @@ function createInventoryAPI(options) {
     require('./app/controllers/product-model')(app, options);
   app.controllers.user =
     require('./app/controllers/user')(app, options);
+  app.controllers.auth =
+    require('./app/controllers/auth')(app, options);
   app.controllers.record =
     require('./app/controllers/record')(app, options);
   app.controllers.invoice =

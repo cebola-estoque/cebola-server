@@ -48,8 +48,9 @@ describe('userCtrl', function () {
         users[0]._pwdHash.should.be.instanceof(String);
         users[0]._id.should.be.instanceof(mongoose.Types.ObjectId);
         users[0].roles.should.be.instanceof(Array);
+        users[0].status.value.should.equal('active');
 
-        Object.keys(users[0].toJSON()).length.should.equal(6);
+        Object.keys(users[0].toJSON()).length.should.equal(7);
       });
 
     });
@@ -80,6 +81,21 @@ describe('userCtrl', function () {
       })
       .then(aux.errorExpected, (err) => {
         err.should.be.instanceof(mongoose.Error.ValidationError);
+      });
+    });
+
+
+    it('should enforce email uniqueness', function () {
+      return userCtrl.create('john@example.com', 'test-password', {
+        name: 'John Doe',
+      })
+      .then(() => {
+        return userCtrl.create('john@example.com', 'test-password', {
+          name: 'John Doe',
+        })
+      })
+      .then(aux.errorExpected, (err) => {
+        err.should.be.instanceof(ASSETS.inventoryAPI.errors.EmailTaken);
       });
     })
   });

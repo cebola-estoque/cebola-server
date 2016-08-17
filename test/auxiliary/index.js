@@ -23,6 +23,7 @@ exports.logError = function (err) {
 
 exports.defaultOptions = {
   mongodbURI: TEST_DB_URI,
+  secret: 'secret',
 };
 
 exports.genOptions = function (opts) {
