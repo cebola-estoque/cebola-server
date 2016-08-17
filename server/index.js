@@ -34,6 +34,8 @@ function createInventoryAPI(options) {
     require('./app/controllers/record')(app, options);
   app.controllers.invoice =
     require('./app/controllers/invoice')(app, options);
+  app.controllers.inventory =
+    require('./app/controllers/inventory')(app, options);
 
   // instantiate middleware for usage in routes
   app.middleware = {};

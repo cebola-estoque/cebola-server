@@ -1,5 +1,6 @@
 // third-party
 const Bluebird = require('bluebird');
+const moment   = require('moment');
 
 // constants
 const SHARED_CONSTANTS = require('../../../shared/constants');
@@ -16,23 +17,39 @@ module.exports = function (app, options) {
 
   var recordCtrl = {};
 
-  recordCtrl.scheduleEntry = function (author, invoiceId, recordData) {
+  recordCtrl.scheduleEntry = function (author, invoice, recordData) {
+
+    // normalize productExpiry to be the end of day of the given date
+    recordData.productExpiry = moment(recordData.productExpiry).endOf('day');
+
     var record = new Record(recordData);
 
     record.set('author', author);
     record.set('type', RECORD_TYPES.ENTRY);
-    record.set('invoiceId', invoiceId);
+
+    record.set('invoice', {
+      _id: invoice._id,
+      fromOrg: invoice.fromOrg,
+      toOrg: invoice.toOrg
+    });
+
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
 
     return record.save();
   };
 
-  recordCtrl.scheduleExit = function (author, invoiceId, recordData) {
+  recordCtrl.scheduleExit = function (author, invoice, recordData) {
     var record = new Record(recordData);
 
     record.set('author', author);
     record.set('type', RECORD_TYPES.EXIT);
-    record.set('invoiceId', invoiceId);
+
+    record.set('invoice', {
+      _id: invoice._id,
+      fromOrg: invoice.fromOrg,
+      toOrg: invoice.toOrg
+    });
+
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
 
     return record.save();
@@ -62,12 +79,18 @@ module.exports = function (app, options) {
     return record.save();
   };
 
-  recordCtrl.registerLoss = function (author, invoiceId, recordData) {
+  recordCtrl.registerLoss = function (author, invoice, recordData) {
     var record = new Record(recordData);
 
     record.set('author', author);
     record.set('type', RECORD_TYPES.LOSS);
-    record.set('invoiceId', invoiceId);
+
+    record.set('invoice', {
+      _id: invoice._id,
+      fromOrg: invoice.fromOrg,
+      toOrg: invoice.toOrg
+    });
+    
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserRegistered');
 
     return record.save();
@@ -75,7 +98,7 @@ module.exports = function (app, options) {
 
   recordCtrl.getByInvoiceId = function (invoiceId) {
     return Record.find({
-      invoiceId: invoiceId
+      'invoice._id': invoiceId,
     });
   };
   

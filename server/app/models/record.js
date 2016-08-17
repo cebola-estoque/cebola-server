@@ -1,5 +1,6 @@
 // third-party dependencies
 const mongoose = require('mongoose');
+const moment   = require('moment');
 
 // constants
 const Schema = mongoose.Schema;
@@ -15,6 +16,25 @@ var recordSchema = new Schema({
     type: require('./sub-schemas/author'),
   },
 
+  invoice: {
+    _id: {
+      type: String,
+      required: true,
+    },
+    fromOrg: {
+      _id: {
+        type: String,
+        required: true,
+      },
+    },
+    toOrg: {
+      _id: {
+        type: String,
+        required: true,
+      }
+    }
+  },
+
   productModel: {
     _id: {
       type: String,
@@ -28,6 +48,15 @@ var recordSchema = new Schema({
 
   productExpiry: {
     type: Date,
+    required: true,
+    validate: {
+      validator: function (exp) {
+
+        return moment(exp).isAfter(Date.now());
+
+      },
+      message: '{VALUE} is an expired date',
+    },
   },
 
   createdAt: {
@@ -74,11 +103,6 @@ var recordSchema = new Schema({
     annotation: {
       type: String,
     }
-  },
-
-  invoiceId: {
-    type: String,
-    required: true,
   },
 });
 

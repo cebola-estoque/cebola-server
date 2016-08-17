@@ -2,6 +2,7 @@ const should = require('should');
 
 const mongoose = require('mongoose');
 const Bluebird = require('bluebird');
+const moment   = require('moment');
 
 const aux = require('../../auxiliary');
 
@@ -79,12 +80,13 @@ describe('recordCtrl', function () {
   });
 
   describe('scheduleEntry', function () {
-    it('should create a new scheduled-entry record in the database', function () {
+    it('should create a new scheduled entry record in the database', function () {
 
       return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice._id,
+        ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
             value: 30,
@@ -105,15 +107,41 @@ describe('recordCtrl', function () {
       .catch(aux.logError);
 
     });
+
+    it('should normalize the productExpiry to the end of the day', function () {
+
+      var expiry = moment(Date.now()).add(10, 'days');
+
+      return recordCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.invoice,
+        {
+          productModel: ASSETS.productModel,
+          productExpiry: expiry,
+
+          quantity: {
+            value: 30,
+            unit: 'kg',
+          },
+        }
+      )
+      .then((record) => {
+        expiry.endOf('day')
+          .isSame(record.productExpiry)
+          .should.equal(true);
+      })
+      .catch(aux.logError);
+
+    });
   });
 
   describe('scheduleExit', function () {
     it('should create a new exit record in the database', function () {
 
       return recordCtrl.scheduleExit(
-        ASSETS.user, ASSETS.invoice._id,
+        ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
             value: -30,
@@ -139,9 +167,10 @@ describe('recordCtrl', function () {
   describe('effectivate', function () {
     it('should modify the status of the scheduledRecord to `effective`', function () {
       return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice._id,
+        ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
             value: 30,
@@ -170,9 +199,10 @@ describe('recordCtrl', function () {
   describe('cancel', function () {
     it('should modify the status of the scheduledRecord to `cancelled`', function () {
       return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice._id,
+        ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
             value: 30,
@@ -201,9 +231,10 @@ describe('recordCtrl', function () {
   describe('registerLoss', function () {
     it('should create a record of type `loss`', function () {
       return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice._id,
+        ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
             value: 30,
@@ -215,8 +246,9 @@ describe('recordCtrl', function () {
         return recordCtrl.effectivate(ASSETS.user, entryRecord);
       })
       .then((entryRecord) => {
-        return recordCtrl.registerLoss(ASSETS.user, ASSETS.invoice._id, {
+        return recordCtrl.registerLoss(ASSETS.user, ASSETS.invoice, {
           productModel: ASSETS.productModel,
+          productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
             value: 10,
