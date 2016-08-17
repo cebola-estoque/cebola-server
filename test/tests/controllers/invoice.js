@@ -24,7 +24,7 @@ describe('invoiceCtrl', function () {
       .then(() => {
         // create a user, an organization and a product-model
         return Bluebird.all([
-          ASSETS.inventoryAPI.controllers.user.create({
+          ASSETS.inventoryAPI.controllers.user.create('john@example.com', 'john-password', {
             name: 'John Doe'
           }),
           ASSETS.inventoryAPI.controllers.productModel.create({

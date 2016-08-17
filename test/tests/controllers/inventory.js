@@ -51,7 +51,7 @@ describe('inventoryCtrl', function () {
         recordCtrl    = ASSETS.inventoryAPI.controllers.record;
       })
       .then(() => {
-        return ASSETS.inventoryAPI.controllers.user.create({
+        return ASSETS.inventoryAPI.controllers.user.create('john@example.com', 'john-password', {
           name: 'John Doe'
         });
       })
