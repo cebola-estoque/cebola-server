@@ -34,8 +34,6 @@ module.exports = function (app, options) {
   recordCtrl.scheduleExit = function (author, invoice, recordData) {
 
     /**
-     * TODO:
-     * 
      * First check if there
      * are enough items to be scheduled for exit
      */
@@ -60,7 +58,7 @@ module.exports = function (app, options) {
     });
   };
 
-  recordCtrl.effectivate = function (author, record) {
+  recordCtrl.effectivate = function (author, record, correctionData) {
     if (!(record instanceof Record)) {
       return Bluebird.reject(new errors.InvalidOption('record', 'typeerror'));
     }
@@ -68,6 +66,9 @@ module.exports = function (app, options) {
     record.newVersion();
 
     record.setAuthor(author);
+    if (correctionData) {
+      record.correct(correctionData);
+    }
     record.setStatus(RECORD_STATUSES.EFFECTIVE, 'UserEffectivated');
 
     return record.save();
@@ -84,37 +85,41 @@ module.exports = function (app, options) {
     return record.save();
   };
 
-  recordCtrl.correct = function (author, record, correction) {
+  recordCtrl.correct = function (author, record, correctionData) {
 
     // save current version to the history
     record.newVersion();
 
     record.setAuthor(author);
-
-    // TODO: implement fields that may be corrected
-    throw new Error('not yet implemented');
+    record.correct(correctionData);
 
     return record.save();
   };
 
   recordCtrl.registerLoss = function (author, invoice, recordData) {
     /**
-     * TODO:
-     * 
      * First check if there
-     * are enough items to be scheduled for exit
+     * are enough items to be scheduled for loss
      */
+    return app.controllers.inventory.computeOrgProductAvailability(
+      invoice.source,
+      recordData.productModel,
+      recordData.productExpiry,
+      recordData.quantity
+    )
+    .then((availability) => {
 
-    var record = new Record(recordData);
+      var record = new Record(recordData);
 
-    record.set('type', RECORD_TYPES.LOSS);
+      record.set('type', RECORD_TYPES.LOSS);
 
-    record.setAuthor(author);
-    record.setInvoice(invoice);
-    
-    record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserRegistered');
+      record.setAuthor(author);
+      record.setInvoice(invoice);
+      
+      record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserRegistered');
 
-    return record.save();
+      return record.save();
+    })
   };
 
   recordCtrl.listByInvoiceId = function (invoiceId) {

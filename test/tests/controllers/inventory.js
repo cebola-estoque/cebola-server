@@ -128,11 +128,15 @@ describe('inventoryCtrl', function () {
 
     it('should compute the quantity of the product at an organization', function () {
 
+      var expiresIn3 = moment(Date.now()).add(3, 'days');
+      var expiresIn4 = moment(Date.now()).add(4, 'days')
+
       // schedule and effectivate entries
       return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
         {
           productModel: ASSETS.productModels[0],
-          productExpiry: moment(Date.now()).add(3, 'days'),
+          scheduledFor: moment().add(1, 'day'),
+          productExpiry: expiresIn3,
           quantity: {
             value: 30,
             unit: 'kg'
@@ -140,7 +144,8 @@ describe('inventoryCtrl', function () {
         },
         {
           productModel: ASSETS.productModels[0],
-          productExpiry: moment(Date.now()).add(3, 'days'),
+          scheduledFor: moment().add(1, 'day'),
+          productExpiry: expiresIn3,
 
           quantity: {
             value: 30,
@@ -149,7 +154,8 @@ describe('inventoryCtrl', function () {
         },
         {
           productModel: ASSETS.productModels[0],
-          productExpiry: moment(Date.now()).add(4, 'days'),
+          scheduledFor: moment().add(1, 'day'),
+          productExpiry: expiresIn4,
 
           quantity: {
             value: 30,
@@ -165,7 +171,8 @@ describe('inventoryCtrl', function () {
         return _scheduleExits(ASSETS.user, ASSETS.invoices[1], [
           {
             productModel: ASSETS.productModels[0],
-            productExpiry: moment(Date.now()).add(3, 'days'),
+            scheduledFor: moment().add(1, 'day'),
+            productExpiry: expiresIn3,
 
             quantity: {
               value: -20,
@@ -185,6 +192,7 @@ describe('inventoryCtrl', function () {
         );
       })
       .then((org1Product1Summary) => {
+
         org1Product1Summary.length.should.equal(2);
         org1Product1Summary[0].quantity.value.should.equal(40);
         org1Product1Summary[1].quantity.value.should.equal(30);
@@ -196,6 +204,7 @@ describe('inventoryCtrl', function () {
       return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
         {
           productModel: ASSETS.productModels[0],
+          scheduledFor: moment().add(1, 'day'),
           productExpiry: moment(Date.now()).add(3, 'days'),
           quantity: {
             value: 30,
@@ -204,6 +213,7 @@ describe('inventoryCtrl', function () {
         },
         {
           productModel: ASSETS.productModels[0],
+          scheduledFor: moment().add(1, 'day'),
           productExpiry: moment(Date.now()).add(3, 'days'),
 
           quantity: {
@@ -220,6 +230,7 @@ describe('inventoryCtrl', function () {
         return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
           {
             productModel: ASSETS.productModels[0],
+            scheduledFor: moment().add(1, 'day'),
             productExpiry: moment(Date.now()).add(3, 'days'),
             quantity: {
               value: 11,

@@ -6,6 +6,15 @@ const moment   = require('moment');
 const Schema = mongoose.Schema;
 const SHARED_CONSTANTS = require('../../../shared/constants');
 
+const CORRECTABLE_PROPERTIES = [
+  'quantity',
+  'productExpiry',
+  'invoice',
+  'productModel',
+  'scheduledFor',
+  'details',
+];
+
 // Object.values might come in es*
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/values
 function _objValues(obj) {
@@ -77,7 +86,7 @@ var recordSchema = new Schema({
 
   scheduledFor: {
     type: Date,
-    // required: true,
+    required: true,
     validate: {
       validator: function (date) {
         return moment(date).isBefore(moment(this.productExpiry).endOf('day'));
@@ -233,6 +242,20 @@ module.exports = function (conn, app, options) {
       },
       destination: {
         _id: invoice.destination._id,
+      }
+    });
+  };
+
+  /**
+   * Method that only picks properties that
+   * are actually correctable.
+   * @param  {Object} correctionData
+   */
+  recordSchema.methods.correct = function (correctionData) {
+    
+    CORRECTABLE_PROPERTIES.forEach((prop) => {
+      if (correctionData.hasOwnProperty(prop)) {
+        this.set(prop, correctionData[prop]);
       }
     });
   };

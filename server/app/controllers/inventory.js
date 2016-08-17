@@ -25,6 +25,11 @@ module.exports = function (app, options) {
     // match the aggregation query
     aggregation.match(query);
 
+    // sort by productExpiry
+    aggregation.sort({
+      productExpiry: -1,
+    });
+
     aggregation.group({
       _id: {
         productModelId: '$productModel._id',
@@ -39,11 +44,6 @@ module.exports = function (app, options) {
       productModel: {
         $last: '$productModel',
       },
-    });
-
-    // sort by productExpiry
-    aggregation.sort({
-      productExpiry: -1,
     });
 
     // filter out productModels with quantity 0

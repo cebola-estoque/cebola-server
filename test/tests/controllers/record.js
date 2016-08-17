@@ -89,6 +89,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
@@ -119,6 +120,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: expiry,
 
           quantity: {
@@ -141,6 +143,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
@@ -166,6 +169,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: expiry,
 
           quantity: {
@@ -182,6 +186,7 @@ describe('recordCtrl', function () {
           ASSETS.user, ASSETS.invoice,
           {
             productModel: ASSETS.productModel,
+            scheduledFor: moment().add(1, 'days'),
             productExpiry: expiry,
 
             quantity: {
@@ -210,6 +215,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
@@ -230,6 +236,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: expiry,
 
           quantity: {
@@ -268,6 +275,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
@@ -300,6 +308,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
@@ -332,6 +341,7 @@ describe('recordCtrl', function () {
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
@@ -346,6 +356,7 @@ describe('recordCtrl', function () {
       .then((entryRecord) => {
         return recordCtrl.registerLoss(ASSETS.user, ASSETS.invoice, {
           productModel: ASSETS.productModel,
+          scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
@@ -360,6 +371,21 @@ describe('recordCtrl', function () {
         lossRecord.quantity.unit.should.equal('kg');
       })
       .catch(aux.logError);
+    });
+
+    it('should verify product availability prior to registering loss', function () {
+      return recordCtrl.registerLoss(ASSETS.user, ASSETS.invoice, {
+        productModel: ASSETS.productModel,
+        productExpiry: moment(Date.now()).add(10, 'days'),
+
+        quantity: {
+          value: -10,
+          unit: 'kg'
+        }
+      })
+      .then(aux.errorExpected, (err) => {
+        err.should.be.instanceof(ASSETS.inventoryAPI.errors.ProductNotAvailable);
+      });
     });
   });
 });
