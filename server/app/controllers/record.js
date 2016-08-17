@@ -21,14 +21,10 @@ module.exports = function (app, options) {
 
     var record = new Record(recordData);
 
-    record.set('author', author);
     record.set('type', RECORD_TYPES.ENTRY);
 
-    record.set('invoice', {
-      _id: invoice._id,
-      source: invoice.source,
-      destination: invoice.destination
-    });
+    record.setAuthor(author);
+    record.setInvoice(invoice);
 
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
 
@@ -37,16 +33,20 @@ module.exports = function (app, options) {
 
   recordCtrl.scheduleExit = function (author, invoice, recordData) {
 
+    /**
+     * TODO:
+     * 
+     * First check if there
+     * are enough items to be scheduled for exit
+     */
+    
+
     var record = new Record(recordData);
 
-    record.set('author', author);
     record.set('type', RECORD_TYPES.EXIT);
 
-    record.set('invoice', {
-      _id: invoice._id,
-      source: invoice.source,
-      destination: invoice.destination
-    });
+    record.setAuthor(author);
+    record.setInvoice(invoice);
 
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
 
@@ -60,7 +60,7 @@ module.exports = function (app, options) {
 
     record.newVersion();
 
-    record.set('author', author);
+    record.setAuthor(author);
     record.setStatus(RECORD_STATUSES.EFFECTIVE, 'UserEffectivated');
 
     return record.save();
@@ -71,30 +71,46 @@ module.exports = function (app, options) {
     // save current version to the history
     record.newVersion();
 
-    record.set('author', author);
+    record.setAuthor(author);
     record.setStatus(RECORD_STATUSES.CANCELLED, 'UserCancelled');
 
     return record.save();
   };
 
+  recordCtrl.correct = function (author, record, correction) {
+
+    // save current version to the history
+    record.newVersion();
+
+    record.setAuthor(author);
+
+    // TODO: implement fields that may be corrected
+    throw new Error('not yet implemented');
+
+    return record.save();
+  };
+
   recordCtrl.registerLoss = function (author, invoice, recordData) {
+    /**
+     * TODO:
+     * 
+     * First check if there
+     * are enough items to be scheduled for exit
+     */
+
     var record = new Record(recordData);
 
-    record.set('author', author);
     record.set('type', RECORD_TYPES.LOSS);
 
-    record.set('invoice', {
-      _id: invoice._id,
-      source: invoice.source,
-      destination: invoice.destination
-    });
+    record.setAuthor(author);
+    record.setInvoice(invoice);
     
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserRegistered');
 
     return record.save();
   };
 
-  recordCtrl.getByInvoiceId = function (invoiceId) {
+  recordCtrl.listByInvoiceId = function (invoiceId) {
     return Record.find({
       'invoice._id': invoiceId,
     });

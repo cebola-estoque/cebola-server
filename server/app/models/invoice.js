@@ -9,14 +9,25 @@ const Schema = mongoose.Schema;
  */
 var invoiceSchema = new Schema({
   author: {
-    type: require('./sub-schemas/author'),
+    _id: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    }
   },
 
   code: {
     type: String,
-    required: true
   },
   
+  /**
+   * Stores a reference to the source
+   * organization of the invoice
+   * @type {Organization}
+   */
   source: {
     _id: {
       type: String,
@@ -29,6 +40,11 @@ var invoiceSchema = new Schema({
     }
   },
 
+  /**
+   * Stores a reference to the destination
+   * organization of the invoice
+   * @type {Organization}
+   */
   destination: {
     _id: {
       type: String,

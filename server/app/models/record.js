@@ -6,6 +6,17 @@ const moment   = require('moment');
 const Schema = mongoose.Schema;
 const SHARED_CONSTANTS = require('../../../shared/constants');
 
+// Object.values might come in es*
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/values
+function _objValues(obj) {
+  return Object.keys(obj).map((k) => {
+    return obj[k];
+  });
+}
+
+const STATUSES = _objValues(SHARED_CONSTANTS.RECORD_STATUSES);
+const TYPES = _objValues(SHARED_CONSTANTS.RECORD_TYPES);
+
 /**
  * Auxiliary schema that defines an operation
  * 
@@ -13,7 +24,14 @@ const SHARED_CONSTANTS = require('../../../shared/constants');
  */
 var recordSchema = new Schema({
   author: {
-    type: require('./sub-schemas/author'),
+    _id: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    }
   },
 
   invoice: {
@@ -83,6 +101,12 @@ var recordSchema = new Schema({
   type: {
     type: String,
     required: true,
+    validate: {
+      validator: function (type) {
+        return TYPES.indexOf(type) !== -1;
+      },
+      message: 'Invalid record type `{VALUE}`'
+    }
   },
 
   quantity: {
@@ -91,9 +115,11 @@ var recordSchema = new Schema({
       required: true,
       validate: {
         validator: function (quantityValue) {
-          if (this.get('type') === 'entry') {
+          var type = this.get('type');
+
+          if (type === 'entry') {
             return quantityValue > 0;
-          } else if (this.get('type') === 'exit') {
+          } else if (type === 'exit' || type === 'loss') {
             return quantityValue < 0;
           }
         },
@@ -116,6 +142,12 @@ var recordSchema = new Schema({
     value: {
       type: String,
       required: true,
+      validate: {
+        validator: function (statusValue) {
+          return STATUSES.indexOf(statusValue) !== -1;
+        },
+        message: 'Invalid record status `{VALUE}`'
+      }
     },
     reason: {
       type: String,
@@ -182,6 +214,25 @@ module.exports = function (conn, app, options) {
       value: status,
       reason: reason,
       annotation: annotation,
+    });
+  };
+
+  recordSchema.methods.setAuthor = function (author) {
+    this.set('author', {
+      _id: author._id,
+      name: author.name,
+    });
+  };
+
+  recordSchema.methods.setInvoice = function (invoice) {
+    this.set('invoice', {
+      _id: invoice._id,
+      source: {
+        _id: invoice.source._id,
+      },
+      destination: {
+        _id: invoice.destination._id,
+      }
     });
   };
 

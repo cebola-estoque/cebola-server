@@ -251,14 +251,14 @@ describe('recordCtrl', function () {
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
-            value: 10,
+            value: -10,
             unit: 'kg'
           }
         })
       })
       .then((lossRecord) => {
         lossRecord.type.should.equal('loss');
-        lossRecord.quantity.value.should.equal(10);
+        lossRecord.quantity.value.should.equal(-10);
         lossRecord.quantity.unit.should.equal('kg');
       })
       .catch(aux.logError);

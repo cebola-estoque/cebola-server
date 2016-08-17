@@ -12,7 +12,8 @@ module.exports = function (app, options) {
   invoiceCtrl.create = function (author, data) {
     var invoice = new Invoice(data);
 
-    invoice.set('author', author);
+    invoice.set('author._id', author._id);
+    invoice.set('author.name', author.name);
 
     return invoice.save();
   };
