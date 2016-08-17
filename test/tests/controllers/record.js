@@ -65,8 +65,8 @@ describe('recordCtrl', function () {
           ASSETS.user,
           {
             code: '123456',
-            fromOrg: ASSETS.orgs[0],
-            toOrg: ASSETS.orgs[1]
+            source: ASSETS.orgs[0],
+            destination: ASSETS.orgs[1]
           }
         );
       })

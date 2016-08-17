@@ -14,6 +14,32 @@ describe('inventoryCtrl', function () {
   var inventoryCtrl;
   var recordCtrl;
 
+  function _scheduleEntries(user, invoice, entriesData) {
+    return Bluebird.all(entriesData.map((entryData) => {
+      return recordCtrl.scheduleEntry(
+        user,
+        invoice,
+        entryData
+      );
+    }));
+  }
+
+  function _scheduleExits(user, invoice, exitsData) {
+    return Bluebird.all(exitsData.map((exitData) => {
+      return recordCtrl.scheduleExit(
+        user,
+        invoice,
+        exitData
+      );
+    }));
+  }
+
+  function _effectivateRecords(user, records) {
+    return Bluebird.all(records.map((record) => {
+      return recordCtrl.effectivate(user, record);
+    }));
+  }
+
   beforeEach(function () {
     return aux.setup()
       .then((assets) => {
@@ -74,16 +100,16 @@ describe('inventoryCtrl', function () {
             ASSETS.user,
             {
               code: 'invoice-1',
-              fromOrg: ASSETS.orgs[1],
-              toOrg: ASSETS.orgs[0]
+              source: ASSETS.orgs[1],
+              destination: ASSETS.orgs[0]
             }
           ),
           ASSETS.inventoryAPI.controllers.invoice.create(
             ASSETS.user,
             {
               code: 'invoice-2',
-              fromOrg: ASSETS.orgs[0],
-              toOrg: ASSETS.orgs[1]
+              source: ASSETS.orgs[0],
+              destination: ASSETS.orgs[1]
             }
           ),
         ]);
@@ -98,94 +124,123 @@ describe('inventoryCtrl', function () {
     return aux.teardown();
   });
 
-  describe('computeProductSummary', function () {
+  describe('computeOrgProductSummary', function () {
 
     it('should compute the quantity of the product at an organization', function () {
 
-      // create and effectivate some records
-      return Bluebird.all([
-        /**
-         * Entries for org-1 of product-1
-         */
-        recordCtrl.scheduleEntry(
-          ASSETS.user, ASSETS.invoices[0],
-          {
-            productModel: ASSETS.productModels[0],
-            productExpiry: moment(Date.now()).add(3, 'days'),
-
-            quantity: {
-              value: 30,
-              unit: 'kg',
-            },
+      // schedule and effectivate entries
+      return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
+        {
+          productModel: ASSETS.productModels[0],
+          productExpiry: moment(Date.now()).add(3, 'days'),
+          quantity: {
+            value: 30,
+            unit: 'kg'
           }
-        ),
-        recordCtrl.scheduleEntry(
-          ASSETS.user, ASSETS.invoices[0],
-          {
-            productModel: ASSETS.productModels[0],
-            productExpiry: moment(Date.now()).add(3, 'days'),
+        },
+        {
+          productModel: ASSETS.productModels[0],
+          productExpiry: moment(Date.now()).add(3, 'days'),
 
-            quantity: {
-              value: 30,
-              unit: 'kg',
-            },
-          }
-        ),
-        recordCtrl.scheduleEntry(
-          ASSETS.user, ASSETS.invoices[0],
-          {
-            productModel: ASSETS.productModels[0],
-            productExpiry: moment(Date.now()).add(4, 'days'),
+          quantity: {
+            value: 30,
+            unit: 'kg',
+          },
+        },
+        {
+          productModel: ASSETS.productModels[0],
+          productExpiry: moment(Date.now()).add(4, 'days'),
 
-            quantity: {
-              value: 30,
-              unit: 'kg',
-            },
-          }
-        ),
-        /**
-         * Entries for org-2 of product-1
-         */
-        recordCtrl.scheduleEntry(
-          ASSETS.user, ASSETS.invoices[1],
-          {
-            productModel: ASSETS.productModels[0],
-            productExpiry: moment(Date.now()).add(3, 'days'),
-
-            quantity: {
-              value: 30,
-              unit: 'kg',
-            },
-          }
-        )
+          quantity: {
+            value: 30,
+            unit: 'kg',
+          },
+        }
       ])
       .then((scheduledRecords) => {
-        return Bluebird.all(scheduledRecords.map((record) => {
-          return recordCtrl.effectivate(ASSETS.user, record);
-        }));
+        return _effectivateRecords(ASSETS.user, scheduledRecords);
       })
-      .then((effectivatedRecords) => {
+      .then(() => {
+        // schedule and effectivate some exits
+        return _scheduleExits(ASSETS.user, ASSETS.invoices[1], [
+          {
+            productModel: ASSETS.productModels[0],
+            productExpiry: moment(Date.now()).add(3, 'days'),
+
+            quantity: {
+              value: -20,
+              unit: 'kg'
+            }
+          }
+        ]);
+      })
+      .then((scheduledExits) => {
+        return _effectivateRecords(ASSETS.user, scheduledExits);
+      })
+      .then(() => {
         // count product-1 at org-1
-        return inventoryCtrl.computeProductSummary(
-          ASSETS.productModels[0],
-          ASSETS.orgs[0]
+        return inventoryCtrl.computeOrgProductSummary(
+          ASSETS.orgs[0],
+          ASSETS.productModels[0]
         );
       })
       .then((org1Product1Summary) => {
         org1Product1Summary.length.should.equal(2);
-        org1Product1Summary[0].quantityValue.should.equal(60);
-        org1Product1Summary[1].quantityValue.should.equal(30);
-      })
-
-      // STUDIES:
-      .then(() => {
-        return inventoryCtrl.computeOrganizationSummary(ASSETS.orgs[0]);
-      })
-      .then((org1Summary) => {
-        console.log(org1Summary);
-      })
-
+        org1Product1Summary[0].quantity.value.should.equal(40);
+        org1Product1Summary[1].quantity.value.should.equal(30);
+      });
     });
+
+    it('should only count records with status at `effective`', function () {
+      // schedule and effectivate entries
+      return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
+        {
+          productModel: ASSETS.productModels[0],
+          productExpiry: moment(Date.now()).add(3, 'days'),
+          quantity: {
+            value: 30,
+            unit: 'kg'
+          }
+        },
+        {
+          productModel: ASSETS.productModels[0],
+          productExpiry: moment(Date.now()).add(3, 'days'),
+
+          quantity: {
+            value: 30,
+            unit: 'kg',
+          },
+        },
+      ])
+      .then((scheduledRecords) => {
+        return _effectivateRecords(ASSETS.user, scheduledRecords);
+      })
+      .then(() => {
+        // schedule and DO NOT effectivate
+        return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
+          {
+            productModel: ASSETS.productModels[0],
+            productExpiry: moment(Date.now()).add(3, 'days'),
+            quantity: {
+              value: 11,
+              unit: 'kg'
+            }
+          },
+        ]);
+      })
+      .then(() => {
+        // count product-1 at org-1
+        return inventoryCtrl.computeOrgProductSummary(
+          ASSETS.orgs[0],
+          ASSETS.productModels[0]
+        );
+      })
+      .then((org1Product1Summary) => {
+        org1Product1Summary.length.should.equal(1);
+        org1Product1Summary[0].quantity.value.should.equal(60);
+        org1Product1Summary[0].quantity.unit.should.equal('kg');
+      })
+    })
   });
 
 });

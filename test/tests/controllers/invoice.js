@@ -69,8 +69,8 @@ describe('invoiceCtrl', function () {
 
       return invoiceCtrl.create(ASSETS.user, {
         code: '123456/12312',
-        fromOrg: ASSETS.orgs[0],
-        toOrg: ASSETS.orgs[1],
+        source: ASSETS.orgs[0],
+        destination: ASSETS.orgs[1],
       })
       .then((invoice) => {
         mongoose.Types.ObjectId.isValid(invoice._id).should.equal(true);

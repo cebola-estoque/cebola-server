@@ -19,9 +19,6 @@ module.exports = function (app, options) {
 
   recordCtrl.scheduleEntry = function (author, invoice, recordData) {
 
-    // normalize productExpiry to be the end of day of the given date
-    recordData.productExpiry = moment(recordData.productExpiry).endOf('day');
-
     var record = new Record(recordData);
 
     record.set('author', author);
@@ -29,8 +26,8 @@ module.exports = function (app, options) {
 
     record.set('invoice', {
       _id: invoice._id,
-      fromOrg: invoice.fromOrg,
-      toOrg: invoice.toOrg
+      source: invoice.source,
+      destination: invoice.destination
     });
 
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
@@ -39,6 +36,7 @@ module.exports = function (app, options) {
   };
 
   recordCtrl.scheduleExit = function (author, invoice, recordData) {
+
     var record = new Record(recordData);
 
     record.set('author', author);
@@ -46,8 +44,8 @@ module.exports = function (app, options) {
 
     record.set('invoice', {
       _id: invoice._id,
-      fromOrg: invoice.fromOrg,
-      toOrg: invoice.toOrg
+      source: invoice.source,
+      destination: invoice.destination
     });
 
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
@@ -87,8 +85,8 @@ module.exports = function (app, options) {
 
     record.set('invoice', {
       _id: invoice._id,
-      fromOrg: invoice.fromOrg,
-      toOrg: invoice.toOrg
+      source: invoice.source,
+      destination: invoice.destination
     });
     
     record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserRegistered');

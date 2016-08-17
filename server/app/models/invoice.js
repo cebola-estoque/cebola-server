@@ -17,7 +17,7 @@ var invoiceSchema = new Schema({
     required: true
   },
   
-  fromOrg: {
+  source: {
     _id: {
       type: String,
       required: true,
@@ -29,7 +29,7 @@ var invoiceSchema = new Schema({
     }
   },
 
-  toOrg: {
+  destination: {
     _id: {
       type: String,
       required: true,

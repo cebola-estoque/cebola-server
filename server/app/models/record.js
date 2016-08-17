@@ -21,13 +21,13 @@ var recordSchema = new Schema({
       type: String,
       required: true,
     },
-    fromOrg: {
+    source: {
       _id: {
         type: String,
         required: true,
       },
     },
-    toOrg: {
+    destination: {
       _id: {
         type: String,
         required: true,
@@ -51,13 +51,24 @@ var recordSchema = new Schema({
     required: true,
     validate: {
       validator: function (exp) {
-
         return moment(exp).isAfter(Date.now());
-
       },
       message: '{VALUE} is an expired date',
     },
   },
+
+  scheduledFor: {
+    type: Date,
+    // required: true,
+    validate: {
+      validator: function (date) {
+        return moment(date).isBefore(moment(this.productExpiry).endOf('day'));
+      },
+      message: 'The record scheduling is for after the product\'s expiry {VALUE}'
+    }
+  },
+
+  tags: [Object],
 
   createdAt: {
     type: Date,
@@ -78,11 +89,21 @@ var recordSchema = new Schema({
     value: {
       type: Number,
       required: true,
+      validate: {
+        validator: function (quantityValue) {
+          if (this.get('type') === 'entry') {
+            return quantityValue > 0;
+          } else if (this.get('type') === 'exit') {
+            return quantityValue < 0;
+          }
+        },
+        message: 'quantity.value MUST be positive for type `entry` and negative for type `exit`'
+      }
     },
     unit: {
       type: String,
       required: true,
-    }
+    },
   },
 
   details: {
@@ -104,6 +125,20 @@ var recordSchema = new Schema({
       type: String,
     }
   },
+});
+
+/**
+ * Normalize data before validation is run
+ */
+recordSchema.pre('validate', function (next) {
+
+  /**
+   * Ensure productExpiry is set to the
+   * end of the day the date refers to.
+   */
+  this.productExpiry = moment(this.productExpiry).endOf('day');
+
+  next();
 });
 
 module.exports = function (conn, app, options) {
