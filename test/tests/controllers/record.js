@@ -1,6 +1,9 @@
 const should = require('should');
 
 const mongoose = require('mongoose');
+const ValidationError = mongoose.Error.ValidationError;
+const ValidatorError  = mongoose.Error.ValidatorError;
+
 const Bluebird = require('bluebird');
 const moment   = require('moment');
 
@@ -132,23 +135,62 @@ describe('recordCtrl', function () {
       .catch(aux.logError);
 
     });
-  });
 
-  describe('scheduleExit', function () {
-    it('should create a new exit record in the database', function () {
-
-      return recordCtrl.scheduleExit(
+    it('should require the quantity to be positive for entries', function () {
+      return recordCtrl.scheduleEntry(
         ASSETS.user, ASSETS.invoice,
         {
           productModel: ASSETS.productModel,
           productExpiry: moment(Date.now()).add(10, 'days'),
 
           quantity: {
-            value: -30,
-            unit: 'kg',
-          },
+            value: -10,
+            unit: 'kg'
+          }
         }
       )
+      .then(aux.errorExpected, function (err) {
+
+        err.should.be.instanceof(ValidationError);
+        err.errors['quantity.value'].kind.should.equal('QuantityAndRecordTypeMismatch');
+      });
+    });
+  });
+
+  describe('scheduleExit', function () {
+    it('should create a new exit record in the database', function () {
+
+      var expiry = moment(Date.now()).add(10, 'days');
+
+      return recordCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.invoice,
+        {
+          productModel: ASSETS.productModel,
+          productExpiry: expiry,
+
+          quantity: {
+            value: 40,
+            unit: 'kg'
+          }
+        }
+      )
+      .then((scheduledEntry) => {
+        return recordCtrl.effectivate(ASSETS.user, scheduledEntry);
+      })
+      .then(() => {
+        return recordCtrl.scheduleExit(
+          ASSETS.user, ASSETS.invoice,
+          {
+            productModel: ASSETS.productModel,
+            productExpiry: expiry,
+
+            quantity: {
+              value: -30,
+              unit: 'kg',
+            },
+          }
+        )
+      })
       .then((record) => {
         mongoose.Types.ObjectId.isValid(record._id).should.equal(true);
 
@@ -162,6 +204,62 @@ describe('recordCtrl', function () {
       .catch(aux.logError);
 
     });
+
+    it('should prevent scheduling of exits that exceed amount available', function () {
+      return recordCtrl.scheduleExit(
+        ASSETS.user, ASSETS.invoice,
+        {
+          productModel: ASSETS.productModel,
+          productExpiry: moment(Date.now()).add(10, 'days'),
+
+          quantity: {
+            value: -30,
+            unit: 'kg',
+          }
+        }
+      )
+      .then(aux.errorExpected, (err) => {
+        err.should.be.instanceof(ASSETS.inventoryAPI.errors.ProductNotAvailable);
+      });
+    });
+
+    it('should require the quantity.value to be negative', function () {
+      var expiry = moment(Date.now()).add(10, 'days');
+
+      return recordCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.invoice,
+        {
+          productModel: ASSETS.productModel,
+          productExpiry: expiry,
+
+          quantity: {
+            value: 40,
+            unit: 'kg'
+          }
+        }
+      )
+      .then((scheduledEntry) => {
+        return recordCtrl.effectivate(ASSETS.user, scheduledEntry);
+      })
+      .then(() => {
+        return recordCtrl.scheduleExit(
+          ASSETS.user, ASSETS.invoice,
+          {
+            productModel: ASSETS.productModel,
+            productExpiry: expiry,
+
+            quantity: {
+              value: 30,
+              unit: 'kg'
+            }
+          }
+        );
+      })
+      .then(aux.errorExpected, (err) => {
+        err.should.be.instanceof(ValidationError);
+        err.errors['quantity.value'].kind.should.equal('QuantityAndRecordTypeMismatch');
+      });
+    })
   });
 
   describe('effectivate', function () {

@@ -114,6 +114,7 @@ var recordSchema = new Schema({
       type: Number,
       required: true,
       validate: {
+        type: 'QuantityAndRecordTypeMismatch',
         validator: function (quantityValue) {
           var type = this.get('type');
 

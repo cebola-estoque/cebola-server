@@ -29,10 +29,18 @@ function InvalidOption(option, kind, message) {
 }
 util.inherits(InvalidOption, InventoryAPIError);
 InvalidOption.prototype.name = 'InvalidOption';
-exports.InvalidOption = InvalidOption;
+
+
+function ProductNotAvailable(product) {
+
+}
+util.inherits(ProductNotAvailable, InventoryAPIError);
+ProductNotAvailable.prototype.name = 'ProductNotAvailable';
+
 
 /**
  * Expose errors
  */
 exports.InventoryAPIError = InventoryAPIError;
 exports.InvalidOption = InvalidOption;
+exports.ProductNotAvailable = ProductNotAvailable;

@@ -39,18 +39,25 @@ module.exports = function (app, options) {
      * First check if there
      * are enough items to be scheduled for exit
      */
-    
+    return app.controllers.inventory.computeOrgProductAvailability(
+      invoice.source,
+      recordData.productModel,
+      recordData.productExpiry,
+      recordData.quantity
+    )
+    .then((availability) => {
 
-    var record = new Record(recordData);
+      var record = new Record(recordData);
 
-    record.set('type', RECORD_TYPES.EXIT);
+      record.set('type', RECORD_TYPES.EXIT);
 
-    record.setAuthor(author);
-    record.setInvoice(invoice);
+      record.setAuthor(author);
+      record.setInvoice(invoice);
 
-    record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
+      record.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
 
-    return record.save();
+      return record.save();
+    });
   };
 
   recordCtrl.effectivate = function (author, record) {

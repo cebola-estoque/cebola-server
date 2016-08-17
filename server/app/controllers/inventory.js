@@ -1,5 +1,8 @@
 // third-party
 const Bluebird = require('bluebird');
+const moment   = require('moment');
+
+// constatns
 const SHARED_CONSTANTS = require('../../../shared/constants');
 
 module.exports = function (app, options) {
@@ -22,11 +25,6 @@ module.exports = function (app, options) {
     // match the aggregation query
     aggregation.match(query);
 
-    // sort by productExpiry
-    aggregation.sort({
-      productExpiry: -1,
-    });
-
     aggregation.group({
       _id: {
         productModelId: '$productModel._id',
@@ -41,6 +39,11 @@ module.exports = function (app, options) {
       productModel: {
         $last: '$productModel',
       },
+    });
+
+    // sort by productExpiry
+    aggregation.sort({
+      productExpiry: -1,
     });
 
     // filter out productModels with quantity 0
@@ -63,11 +66,11 @@ module.exports = function (app, options) {
     return aggregation.exec();
   };
 
-  inventoryCtrl.computeOrgProductSummary = function (organization, productModel) {
+  inventoryCtrl.computeOrgProductSummary = function (organization, productModel, query) {
     // ensure the orgId is in string format
     var orgId = organization._id.toString();
 
-    var query = {};
+    query = query || {};
 
     // scoped by organization
     query['$or'] = [
@@ -80,12 +83,12 @@ module.exports = function (app, options) {
     return inventoryCtrl.computeSummary(query);
   };
 
-  inventoryCtrl.computeOrgSummary = function (organization) {
+  inventoryCtrl.computeOrgSummary = function (organization, query) {
 
     // ensure the orgId is in string format
     var orgId = organization._id.toString();
 
-    var query = {};
+    query = query || {};
 
     // scoped by organization
     query['$or'] = [
@@ -95,6 +98,33 @@ module.exports = function (app, options) {
     
     return inventoryCtrl.computeSummary(query);
 
+  };
+
+  inventoryCtrl.computeOrgProductAvailability = function (organization, productModel, productExpiry, requestedQuantity) {
+
+    // normalize the product expiry to the end of the day
+    // convert the moment.js date into a native JS Date
+    productExpiry = moment(productExpiry).endOf('day').toDate();
+
+    return inventoryCtrl.computeOrgProductSummary(organization, productModel, {
+      productExpiry: productExpiry,
+      'quantity.unit': requestedQuantity.unit,
+    })
+    .then((summaryResults) => {
+
+      if (summaryResults.length === 0) {
+        return Bluebird.reject(new errors.ProductNotAvailable());
+      }
+
+      if (summaryResults[0].quantity.value > Math.abs(requestedQuantity.value)) {
+        return {
+          available: true,
+          summary: summaryResults[0],
+        };
+      } else {
+        return Bluebird.reject(new errors.ProductNotAvailable());
+      }
+    })
   };
   
   return inventoryCtrl;
