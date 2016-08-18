@@ -51,6 +51,15 @@ function Unauthorized() {
 util.inherits(Unauthorized, InventoryAPIError);
 Unauthorized.prototype.name = 'Unauthorized';
 
+function NotFound(resourceName, resourceIdentifier) {
+  InventoryAPIError.call(this, 'resource ' + resourceName + ' not found');
+
+  this.resource = resourceName;
+  this.identifier = resourceIdentifier;
+}
+util.inherits(NotFound, InventoryAPIError);
+NotFound.prototype.name = 'NotFound';
+
 /**
  * Expose errors
  */
@@ -59,3 +68,4 @@ exports.InvalidOption = InvalidOption;
 exports.ProductNotAvailable = ProductNotAvailable;
 exports.EmailTaken = EmailTaken;
 exports.Unauthorized = Unauthorized;
+exports.NotFound = NotFound;

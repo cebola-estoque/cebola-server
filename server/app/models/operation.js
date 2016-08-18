@@ -9,7 +9,7 @@ const SHARED_CONSTANTS = require('../../../shared/constants');
 const CORRECTABLE_PROPERTIES = [
   'quantity',
   'productExpiry',
-  'invoice',
+  'shipment',
   'productModel',
   'scheduledFor',
   'details',
@@ -31,7 +31,7 @@ const TYPES = _objValues(SHARED_CONSTANTS.RECORD_TYPES);
  * 
  * @type {Schema}
  */
-var recordSchema = new Schema({
+var operationSchema = new Schema({
   author: {
     _id: {
       type: String,
@@ -43,23 +43,18 @@ var recordSchema = new Schema({
     }
   },
 
-  invoice: {
+  organization: {
+    _id: {
+      type: String,
+      required: true,
+    }
+  },
+
+  shipment: {
     _id: {
       type: String,
       required: true,
     },
-    source: {
-      _id: {
-        type: String,
-        required: true,
-      },
-    },
-    destination: {
-      _id: {
-        type: String,
-        required: true,
-      }
-    }
   },
 
   productModel: {
@@ -91,7 +86,7 @@ var recordSchema = new Schema({
       validator: function (date) {
         return moment(date).isBefore(moment(this.productExpiry).endOf('day'));
       },
-      message: 'The record scheduling is for after the product\'s expiry {VALUE}'
+      message: 'The operation scheduling is for after the product\'s expiry {VALUE}'
     }
   },
 
@@ -114,7 +109,7 @@ var recordSchema = new Schema({
       validator: function (type) {
         return TYPES.indexOf(type) !== -1;
       },
-      message: 'Invalid record type `{VALUE}`'
+      message: 'Invalid operation type `{VALUE}`'
     }
   },
 
@@ -123,7 +118,7 @@ var recordSchema = new Schema({
       type: Number,
       required: true,
       validate: {
-        type: 'QuantityAndRecordTypeMismatch',
+        type: 'QuantityAndOperationTypeMismatch',
         validator: function (quantityValue) {
           var type = this.get('type');
 
@@ -156,7 +151,7 @@ var recordSchema = new Schema({
         validator: function (statusValue) {
           return STATUSES.indexOf(statusValue) !== -1;
         },
-        message: 'Invalid record status `{VALUE}`'
+        message: 'Invalid operation status `{VALUE}`'
       }
     },
     reason: {
@@ -172,7 +167,7 @@ var recordSchema = new Schema({
 /**
  * Normalize data before validation is run
  */
-recordSchema.pre('validate', function (next) {
+operationSchema.pre('validate', function (next) {
 
   /**
    * Ensure productExpiry is set to the
@@ -186,10 +181,10 @@ recordSchema.pre('validate', function (next) {
 module.exports = function (conn, app, options) {
 
   /**
-   * Adds the current version of the record to its history
+   * Adds the current version of the operation to its history
    * and resets some properties.
    */
-  recordSchema.methods.newVersion = function () {
+  operationSchema.methods.newVersion = function () {
 
     this.history.push({
       author: {
@@ -219,7 +214,7 @@ module.exports = function (conn, app, options) {
     this.set('status', undefined);
   };
 
-  recordSchema.methods.setStatus = function (status, reason, annotation) {
+  operationSchema.methods.setStatus = function (status, reason, annotation) {
     this.set('status', {
       value: status,
       reason: reason,
@@ -227,22 +222,16 @@ module.exports = function (conn, app, options) {
     });
   };
 
-  recordSchema.methods.setAuthor = function (author) {
+  operationSchema.methods.setAuthor = function (author) {
     this.set('author', {
       _id: author._id,
       name: author.name,
     });
   };
 
-  recordSchema.methods.setInvoice = function (invoice) {
-    this.set('invoice', {
-      _id: invoice._id,
-      source: {
-        _id: invoice.source._id,
-      },
-      destination: {
-        _id: invoice.destination._id,
-      }
+  operationSchema.methods.setShipment = function (shipment) {
+    this.set('shipment', {
+      _id: shipment._id,
     });
   };
 
@@ -251,7 +240,7 @@ module.exports = function (conn, app, options) {
    * are actually correctable.
    * @param  {Object} correctionData
    */
-  recordSchema.methods.correct = function (correctionData) {
+  operationSchema.methods.correct = function (correctionData) {
     
     CORRECTABLE_PROPERTIES.forEach((prop) => {
       if (correctionData.hasOwnProperty(prop)) {
@@ -260,7 +249,7 @@ module.exports = function (conn, app, options) {
     });
   };
 
-  var Record = conn.model('Record', recordSchema);
+  var Operation = conn.model('Operation', operationSchema);
   
-  return Record;
+  return Operation;
 };

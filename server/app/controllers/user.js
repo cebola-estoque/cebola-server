@@ -10,14 +10,14 @@ module.exports = function (app, options) {
 
   const errors = app.errors;
 
-  var userCtrl = {};
+  var ctrl = {};
 
   /**
    * Creates a new user
    * @param  {Object} userData
    * @return {Bluebird -> user}
    */
-  userCtrl.create = function (email, plainTextPassword, data) {
+  ctrl.create = function (email, plainTextPassword, data) {
 
     if (!email) {
       return Bluebird.reject(new errors.InvalidOption('email', 'required'));
@@ -51,7 +51,20 @@ module.exports = function (app, options) {
       });
   };
 
-  userCtrl.resetPassword = function (user, plainTextPassword) {
+  ctrl.getById = function (id) {
+    return User.findOne({
+      _id: id,
+    })
+    .then((user) => {
+      if (!user) {
+        return Bluebird.reject(new errors.NotFound('user', id));
+      } else {
+        return user;
+      }
+    });
+  };
+
+  ctrl.resetPassword = function (user, plainTextPassword) {
     return User.hashPassword(plainTextPassword)
       .then((passwordHash) => {
         user.set('_pwdHash', passwordHash);
@@ -60,17 +73,17 @@ module.exports = function (app, options) {
       });
   };
 
-  userCtrl.deactivate = function (user, reason) {
+  ctrl.deactivate = function (user, reason) {
     user.setStatus(SHARED_CONSTANTS.USER_STATUSES.DEACTIVATED, reason);
 
     return user.save();
   };
 
-  userCtrl.activate = function (user, reason) {
+  ctrl.activate = function (user, reason) {
     user.setStatus(SHARED_CONSTANTS.USER_STATUSES.ACTIVE, reason);
 
     return user.save();
   };
 
-  return userCtrl;
+  return ctrl;
 };

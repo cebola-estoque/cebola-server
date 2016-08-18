@@ -29,7 +29,17 @@ describe('productModelCtrl', function () {
   describe('create', function () {
     it('should create a new productModel entry in the database', function () {
 
-      return productModelCtrl.create({
+      var userData = {
+        _id: '1234',
+        name: 'Some user name',
+      };
+
+      var orgData = {
+        _id: '1234',
+        name: 'Org 1'
+      };
+
+      return productModelCtrl.create(userData, orgData, {
         name: 'Test Product',
         sku: '12345678',
       })

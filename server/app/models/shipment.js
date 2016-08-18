@@ -7,7 +7,7 @@ const Schema = mongoose.Schema;
 /**
  * @type {Schema}
  */
-var invoiceSchema = new Schema({
+var shipmentSchema = new Schema({
   author: {
     _id: {
       type: String,
@@ -19,49 +19,62 @@ var invoiceSchema = new Schema({
     }
   },
 
-  code: {
+  type: {
     type: String,
+    required: true,
+  },
+
+  organization: {
+    _id: {
+      type: String,
+      required: true,
+    },
+
+    name: {
+      type: String,
+      required: true,
+    }
   },
   
   /**
    * Stores a reference to the source
-   * organization of the invoice
+   * organization of the shipment (if applicable)
    * @type {Organization}
    */
   source: {
     _id: {
       type: String,
-      required: true,
     },
 
     name: {
       type: String,
-      required: true,
     }
   },
 
   /**
    * Stores a reference to the destination
-   * organization of the invoice
+   * organization of the shipment (if applicable)
    * @type {Organization}
    */
   destination: {
     _id: {
       type: String,
-      required: true,
     },
 
     name: {
       type: String,
-      required: true,
     }
   },
+
+  document: {
+    type: Object,
+  }
 });
 
 // takes the connection and options and returns the model
 module.exports = function (conn, app, options) {
 
-  var Invoice = conn.model('Invoice', invoiceSchema);
+  var Shipment = conn.model('Shipment', shipmentSchema);
   
-  return Invoice;
+  return Shipment;
 };

@@ -20,10 +20,12 @@ module.exports = function (app, options) {
     require('../models/user')(conn, app, options);
   mongooseService.models.Organization =
     require('../models/organization')(conn, app, options);
+  mongooseService.models.OrganizationContact =
+    require('../models/organization-contact')(conn, app, options);
   mongooseService.models.ProductModel =
     require('../models/product-model')(conn, app, options);
-  mongooseService.models.Record =
-    require('../models/record')(conn, app, options);
-  mongooseService.models.Invoice =
-    require('../models/invoice')(conn, app, options);
+  mongooseService.models.Operation =
+    require('../models/operation')(conn, app, options);
+  mongooseService.models.Shipment =
+    require('../models/shipment')(conn, app, options);
 };

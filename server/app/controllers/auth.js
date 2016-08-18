@@ -39,6 +39,7 @@ module.exports = function (app, options) {
       'status.value': SHARED_CONSTANTS.USER_STATUSES.ACTIVE,
     })
     .then((user) => {
+
       if (!user) {
         return Bluebird.reject(new errors.Unauthorized());
       }
@@ -62,7 +63,7 @@ module.exports = function (app, options) {
       // password is valid
       return _jwtSign(payload, SECRET, {
         expiresIn: '30d',
-        subject: _user.email,
+        subject: _user._id.toString(),
       });
     })
     .catch((err) => {

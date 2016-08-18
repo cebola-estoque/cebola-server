@@ -90,6 +90,23 @@ module.exports = function (conn, app, options) {
     });
   };
 
+  /**
+   * Checks if the given user has the requested roles.
+   * @param  {String|Array} roles
+   * @return {Boolean}
+   */
+  userSchema.methods.verifyRoles = function (roles) {
+    roles = (typeof roles === 'string') ? [roles] : roles;
+
+    if (roles.length === 0) {
+      throw new Error('roles MUST not be empty');
+    }
+
+    return roles.every((role) => {
+      return this.roles.indexOf(role) !== -1;
+    });
+  }
+
   var User = conn.model('User', userSchema);
   
   return User;

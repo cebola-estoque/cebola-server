@@ -3,7 +3,7 @@ const Bluebird = require('bluebird');
 
 module.exports = function (app, options) {
 
-  const Organization = app.services.mongoose.models.Organization;
+  const OrganizationContact = app.services.mongoose.models.OrganizationContact;
 
   const errors = app.errors;
 
@@ -14,14 +14,14 @@ module.exports = function (app, options) {
    * @param  {Object} orgData
    * @return {Bluebird -> org}
    */
-  ctrl.create = function (user, orgData) {
-    var org = new Organization(orgData);
+  ctrl.create = function (orgData) {
+    var org = new OrganizationContact(orgData);
 
     return org.save();
   };
 
   ctrl.getById = function (id) {
-    return Organization.findOne({
+    return OrganizationContact.findOne({
       _id: id,
     })
     .then((organization) => {

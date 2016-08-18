@@ -11,10 +11,10 @@ const aux = require('../../auxiliary');
 
 const createInventoryAPI = require('../../../server');
 
-describe('recordCtrl', function () {
+describe('operationCtrl', function () {
 
   var ASSETS;
-  var recordCtrl;
+  var operationCtrl;
 
   beforeEach(function () {
     return aux.setup()
@@ -23,58 +23,56 @@ describe('recordCtrl', function () {
 
         ASSETS.inventoryAPI = createInventoryAPI(aux.genOptions({}));
 
-        recordCtrl = ASSETS.inventoryAPI.controllers.record;
+        operationCtrl = ASSETS.inventoryAPI.controllers.operation;
       })
       .then(() => {
         // create a user, an organization and a product-model
-        return Bluebird.all([
-          ASSETS.inventoryAPI.controllers.user.create('john@example.com', 'john-password', {
-            name: 'John Doe'
-          }),
-          ASSETS.inventoryAPI.controllers.productModel.create({
+        return ASSETS.inventoryAPI.controllers.user.create('john@example.com', 'john-password', {
+          name: 'John Doe'
+        });
+      })
+      .then((user) => {
+        ASSETS.user = user
+
+        // register one organization
+        return ASSETS.inventoryAPI.controllers.organization.create(ASSETS.user, {
+          name: 'Org 1',
+          document: {
+            type: 'CNPJ',
+            value: '12345678',
+          }
+        });
+      })
+      .then((organization) => {
+        ASSETS.organization = organization;
+
+        // create a productModel
+        
+        return ASSETS.inventoryAPI.controllers.productModel.create(
+          ASSETS.user, ASSETS.organization,
+          {
             name: 'Test product',
             sku: '1823789127398',
-          })
-        ]);
-      })
-      .then((results) => {
-
-        ASSETS.user         = results[0];
-        ASSETS.productModel = results[1];
-
-        // register 2 organizations
-        return Bluebird.all([
-          ASSETS.inventoryAPI.controllers.organization.create({
-            name: 'Org 1',
-            document: {
-              type: 'CNPJ',
-              value: '12345678',
-            }
-          }),
-          ASSETS.inventoryAPI.controllers.organization.create({
-            name: 'Org 2',
-            document: {
-              type: 'CNPJ',
-              value: '12345678',
-            }
-          }),
-        ]);
-      })
-      .then((results) => {
-        ASSETS.orgs = results;
-
-        // create an invoice from org 1 to org 2
-        return ASSETS.inventoryAPI.controllers.invoice.create(
-          ASSETS.user,
-          {
-            code: '123456',
-            source: ASSETS.orgs[0],
-            destination: ASSETS.orgs[1]
           }
         );
       })
-      .then((invoice) => {
-        ASSETS.invoice = invoice;
+      .then((productModel) => {
+        ASSETS.productModel = productModel;
+
+        // create an entry shipment
+        return ASSETS.inventoryAPI.controllers.shipment.create(
+          ASSETS.user, ASSETS.organization,
+          {
+            type: 'entry',
+            source: {
+              _id: '123456',
+              name: 'Some other org',
+            }
+          }
+        );
+      })
+      .then((shipment) => {
+        ASSETS.shipment = shipment;
       });
   });
 
@@ -83,11 +81,12 @@ describe('recordCtrl', function () {
   });
 
   describe('scheduleEntry', function () {
-    it('should create a new scheduled entry record in the database', function () {
+    it('should create a new scheduled entry operation in the database', function () {
 
-      return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice,
+      return operationCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
@@ -98,14 +97,14 @@ describe('recordCtrl', function () {
           },
         }
       )
-      .then((record) => {
-        mongoose.Types.ObjectId.isValid(record._id).should.equal(true);
+      .then((operation) => {
+        mongoose.Types.ObjectId.isValid(operation._id).should.equal(true);
 
-        record.quantity.value.should.equal(30);
-        record.quantity.unit.should.equal('kg');
+        operation.quantity.value.should.equal(30);
+        operation.quantity.unit.should.equal('kg');
 
-        record.status.value.should.equal('scheduled');
-        record.type.should.equal('entry');
+        operation.status.value.should.equal('scheduled');
+        operation.type.should.equal('entry');
 
       })
       .catch(aux.logError);
@@ -116,9 +115,10 @@ describe('recordCtrl', function () {
 
       var expiry = moment(Date.now()).add(10, 'days');
 
-      return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice,
+      return operationCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: expiry,
@@ -129,9 +129,9 @@ describe('recordCtrl', function () {
           },
         }
       )
-      .then((record) => {
+      .then((operation) => {
         expiry.endOf('day')
-          .isSame(record.productExpiry)
+          .isSame(operation.productExpiry)
           .should.equal(true);
       })
       .catch(aux.logError);
@@ -139,9 +139,10 @@ describe('recordCtrl', function () {
     });
 
     it('should require the quantity to be positive for entries', function () {
-      return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice,
+      return operationCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
@@ -155,19 +156,20 @@ describe('recordCtrl', function () {
       .then(aux.errorExpected, function (err) {
 
         err.should.be.instanceof(ValidationError);
-        err.errors['quantity.value'].kind.should.equal('QuantityAndRecordTypeMismatch');
+        err.errors['quantity.value'].kind.should.equal('QuantityAndOperationTypeMismatch');
       });
     });
   });
 
   describe('scheduleExit', function () {
-    it('should create a new exit record in the database', function () {
+    it('should create a new exit operation in the database', function () {
 
       var expiry = moment(Date.now()).add(10, 'days');
 
-      return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice,
+      return operationCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: expiry,
@@ -179,12 +181,13 @@ describe('recordCtrl', function () {
         }
       )
       .then((scheduledEntry) => {
-        return recordCtrl.effectivate(ASSETS.user, scheduledEntry);
+        return operationCtrl.effectivate(ASSETS.user, scheduledEntry);
       })
       .then(() => {
-        return recordCtrl.scheduleExit(
-          ASSETS.user, ASSETS.invoice,
+        return operationCtrl.scheduleExit(
+          ASSETS.user, ASSETS.organization,
           {
+            shipment: ASSETS.shipment,
             productModel: ASSETS.productModel,
             scheduledFor: moment().add(1, 'days'),
             productExpiry: expiry,
@@ -196,14 +199,14 @@ describe('recordCtrl', function () {
           }
         )
       })
-      .then((record) => {
-        mongoose.Types.ObjectId.isValid(record._id).should.equal(true);
+      .then((operation) => {
+        mongoose.Types.ObjectId.isValid(operation._id).should.equal(true);
 
-        record.quantity.value.should.equal(-30);
-        record.quantity.unit.should.equal('kg');
+        operation.quantity.value.should.equal(-30);
+        operation.quantity.unit.should.equal('kg');
 
-        record.status.value.should.equal('scheduled');
-        record.type.should.equal('exit');
+        operation.status.value.should.equal('scheduled');
+        operation.type.should.equal('exit');
 
       })
       .catch(aux.logError);
@@ -211,9 +214,10 @@ describe('recordCtrl', function () {
     });
 
     it('should prevent scheduling of exits that exceed amount available', function () {
-      return recordCtrl.scheduleExit(
-        ASSETS.user, ASSETS.invoice,
+      return operationCtrl.scheduleExit(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
@@ -232,9 +236,10 @@ describe('recordCtrl', function () {
     it('should require the quantity.value to be negative', function () {
       var expiry = moment(Date.now()).add(10, 'days');
 
-      return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice,
+      return operationCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: expiry,
@@ -246,13 +251,15 @@ describe('recordCtrl', function () {
         }
       )
       .then((scheduledEntry) => {
-        return recordCtrl.effectivate(ASSETS.user, scheduledEntry);
+        return operationCtrl.effectivate(ASSETS.user, scheduledEntry);
       })
       .then(() => {
-        return recordCtrl.scheduleExit(
-          ASSETS.user, ASSETS.invoice,
+        return operationCtrl.scheduleExit(
+          ASSETS.user, ASSETS.organization,
           {
+            shipment: ASSETS.shipment,
             productModel: ASSETS.productModel,
+            scheduledFor: moment().add(1, 'days'),
             productExpiry: expiry,
 
             quantity: {
@@ -264,16 +271,17 @@ describe('recordCtrl', function () {
       })
       .then(aux.errorExpected, (err) => {
         err.should.be.instanceof(ValidationError);
-        err.errors['quantity.value'].kind.should.equal('QuantityAndRecordTypeMismatch');
+        err.errors['quantity.value'].kind.should.equal('QuantityAndOperationTypeMismatch');
       });
     })
   });
 
   describe('effectivate', function () {
     it('should modify the status of the scheduledRecord to `effective`', function () {
-      return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice,
+      return operationCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
@@ -284,19 +292,19 @@ describe('recordCtrl', function () {
           },
         }
       )
-      .then((record) => {
+      .then((operation) => {
         
-        return recordCtrl.effectivate(ASSETS.user, record);
+        return operationCtrl.effectivate(ASSETS.user, operation);
 
       })
-      .then((record) => {
-        record.status.value.should.equal('effective');
-        record.status.reason.should.equal('UserEffectivated');
+      .then((operation) => {
+        operation.status.value.should.equal('effective');
+        operation.status.reason.should.equal('UserEffectivated');
 
-        record.history.length.should.equal(1);
-        record.history[0].status.value.should.equal('scheduled');
-        record.history[0].quantity.value.should.equal(30);
-        record.history[0].quantity.unit.should.equal('kg');
+        operation.history.length.should.equal(1);
+        operation.history[0].status.value.should.equal('scheduled');
+        operation.history[0].quantity.value.should.equal(30);
+        operation.history[0].quantity.unit.should.equal('kg');
       })
       .catch(aux.logError);
     });
@@ -304,9 +312,10 @@ describe('recordCtrl', function () {
 
   describe('cancel', function () {
     it('should modify the status of the scheduledRecord to `cancelled`', function () {
-      return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice,
+      return operationCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
@@ -317,29 +326,30 @@ describe('recordCtrl', function () {
           },
         }
       )
-      .then((record) => {
+      .then((operation) => {
         
-        return recordCtrl.cancel(ASSETS.user, record);
+        return operationCtrl.cancel(ASSETS.user, operation);
 
       })
-      .then((record) => {
-        record.status.value.should.equal('cancelled');
-        record.status.reason.should.equal('UserCancelled');
+      .then((operation) => {
+        operation.status.value.should.equal('cancelled');
+        operation.status.reason.should.equal('UserCancelled');
 
-        record.history.length.should.equal(1);
-        record.history[0].status.value.should.equal('scheduled');
-        record.history[0].quantity.value.should.equal(30);
-        record.history[0].quantity.unit.should.equal('kg');
+        operation.history.length.should.equal(1);
+        operation.history[0].status.value.should.equal('scheduled');
+        operation.history[0].quantity.value.should.equal(30);
+        operation.history[0].quantity.unit.should.equal('kg');
       })
       .catch(aux.logError);
     });
   });
 
   describe('registerLoss', function () {
-    it('should create a record of type `loss`', function () {
-      return recordCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.invoice,
+    it('should create a operation of type `loss`', function () {
+      return operationCtrl.scheduleEntry(
+        ASSETS.user, ASSETS.organization,
         {
+          shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
           scheduledFor: moment().add(1, 'days'),
           productExpiry: moment(Date.now()).add(10, 'days'),
@@ -351,19 +361,23 @@ describe('recordCtrl', function () {
         }
       )
       .then((entryRecord) => {
-        return recordCtrl.effectivate(ASSETS.user, entryRecord);
+        return operationCtrl.effectivate(ASSETS.user, entryRecord);
       })
       .then((entryRecord) => {
-        return recordCtrl.registerLoss(ASSETS.user, ASSETS.invoice, {
-          productModel: ASSETS.productModel,
-          scheduledFor: moment().add(1, 'days'),
-          productExpiry: moment(Date.now()).add(10, 'days'),
+        return operationCtrl.registerLoss(
+          ASSETS.user, ASSETS.organization,
+          {
+            shipment: ASSETS.shipment,
+            productModel: ASSETS.productModel,
+            scheduledFor: moment().add(1, 'days'),
+            productExpiry: moment(Date.now()).add(10, 'days'),
 
-          quantity: {
-            value: -10,
-            unit: 'kg'
+            quantity: {
+              value: -10,
+              unit: 'kg'
+            }
           }
-        })
+        )
       })
       .then((lossRecord) => {
         lossRecord.type.should.equal('loss');
@@ -374,15 +388,19 @@ describe('recordCtrl', function () {
     });
 
     it('should verify product availability prior to registering loss', function () {
-      return recordCtrl.registerLoss(ASSETS.user, ASSETS.invoice, {
-        productModel: ASSETS.productModel,
-        productExpiry: moment(Date.now()).add(10, 'days'),
+      return operationCtrl.registerLoss(
+        ASSETS.user, ASSETS.organization, 
+        {
+          shipment: ASSETS.shipment,
+          productModel: ASSETS.productModel,
+          productExpiry: moment(Date.now()).add(10, 'days'),
 
-        quantity: {
-          value: -10,
-          unit: 'kg'
+          quantity: {
+            value: -10,
+            unit: 'kg'
+          }
         }
-      })
+      )
       .then(aux.errorExpected, (err) => {
         err.should.be.instanceof(ASSETS.inventoryAPI.errors.ProductNotAvailable);
       });

@@ -12,23 +12,23 @@ describe('inventoryCtrl', function () {
 
   var ASSETS;
   var inventoryCtrl;
-  var recordCtrl;
+  var operationCtrl;
 
-  function _scheduleEntries(user, invoice, entriesData) {
+  function _scheduleEntries(user, organization, entriesData) {
     return Bluebird.all(entriesData.map((entryData) => {
-      return recordCtrl.scheduleEntry(
+      return operationCtrl.scheduleEntry(
         user,
-        invoice,
+        organization,
         entryData
       );
     }));
   }
 
-  function _scheduleExits(user, invoice, exitsData) {
+  function _scheduleExits(user, organization, exitsData) {
     return Bluebird.all(exitsData.map((exitData) => {
-      return recordCtrl.scheduleExit(
+      return operationCtrl.scheduleExit(
         user,
-        invoice,
+        organization,
         exitData
       );
     }));
@@ -36,7 +36,7 @@ describe('inventoryCtrl', function () {
 
   function _effectivateRecords(user, records) {
     return Bluebird.all(records.map((record) => {
-      return recordCtrl.effectivate(user, record);
+      return operationCtrl.effectivate(user, record);
     }));
   }
 
@@ -48,7 +48,7 @@ describe('inventoryCtrl', function () {
         ASSETS.inventoryAPI = createInventoryAPI(aux.genOptions({}));
 
         inventoryCtrl = ASSETS.inventoryAPI.controllers.inventory;
-        recordCtrl    = ASSETS.inventoryAPI.controllers.record;
+        operationCtrl = ASSETS.inventoryAPI.controllers.operation;
       })
       .then(() => {
         return ASSETS.inventoryAPI.controllers.user.create('john@example.com', 'john-password', {
@@ -59,63 +59,65 @@ describe('inventoryCtrl', function () {
 
         ASSETS.user = user;
 
-        // create a user, an organization and a product-model
+        // create an organization
+        return ASSETS.inventoryAPI.controllers.organization.create(ASSETS.user, {
+          name: 'Org 1',
+          document: {
+            type: 'CNPJ',
+            value: '123455',
+          }
+        });
+
+      })
+      .then((organization) => {
+        ASSETS.organization = organization;
+
+        // create 2 product models
         return Bluebird.all([
-          ASSETS.inventoryAPI.controllers.productModel.create({
-            name: 'Test product 1',
-            sku: '1823789127398',
-          }),
-          ASSETS.inventoryAPI.controllers.productModel.create({
-            name: 'Test product 2',
-            sku: '893u4189u12',
-          }),
+          ASSETS.inventoryAPI.controllers.productModel.create(
+            ASSETS.user, ASSETS.organization,
+            {
+              name: 'Test product 1',
+              sku: '1823789127398',
+            }
+          ),
+          ASSETS.inventoryAPI.controllers.productModel.create(
+            ASSETS.user, ASSETS.organization,
+            {
+              name: 'Test product 2',
+              sku: '893u4189u12',
+            }
+          ),
         ]);
       })
       .then((productModels) => {
         ASSETS.productModels = productModels;
 
-        // register 2 organizations
+        // create 2 shipments
         return Bluebird.all([
-          ASSETS.inventoryAPI.controllers.organization.create({
-            name: 'Org 1',
-            document: {
-              type: 'CNPJ',
-              value: '12345678',
-            }
-          }),
-          ASSETS.inventoryAPI.controllers.organization.create({
-            name: 'Org 2',
-            document: {
-              type: 'CNPJ',
-              value: '12345678',
-            }
-          }),
-        ]);
-      })
-      .then((orgs) => {
-        ASSETS.orgs = orgs;
-
-        return Bluebird.all([
-          ASSETS.inventoryAPI.controllers.invoice.create(
-            ASSETS.user,
+          ASSETS.inventoryAPI.controllers.shipment.create(
+            ASSETS.user, ASSETS.organization,
             {
-              code: 'invoice-1',
-              source: ASSETS.orgs[1],
-              destination: ASSETS.orgs[0]
+              type: 'entry',
+              source: {
+                _id: '12345',
+              },
             }
           ),
-          ASSETS.inventoryAPI.controllers.invoice.create(
-            ASSETS.user,
+          ASSETS.inventoryAPI.controllers.shipment.create(
+            ASSETS.user, ASSETS.organization,
             {
-              code: 'invoice-2',
-              source: ASSETS.orgs[0],
-              destination: ASSETS.orgs[1]
+              type: 'exit',
+              destination: {
+                _id: '09876',
+              }
             }
           ),
         ]);
       })
-      .then((invoices) => {
-        ASSETS.invoices = invoices;
+      .then((shipments) => {
+        ASSETS.entryShipment = shipments[0];
+        ASSETS.exitShipment  = shipments[1];
       })
       .catch(aux.logError);
   });
@@ -132,8 +134,9 @@ describe('inventoryCtrl', function () {
       var expiresIn4 = moment(Date.now()).add(4, 'days')
 
       // schedule and effectivate entries
-      return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
+      return _scheduleEntries(ASSETS.user, ASSETS.organization, [
         {
+          shipment: ASSETS.entryShipment,
           productModel: ASSETS.productModels[0],
           scheduledFor: moment().add(1, 'day'),
           productExpiry: expiresIn3,
@@ -143,6 +146,7 @@ describe('inventoryCtrl', function () {
           }
         },
         {
+          shipment: ASSETS.entryShipment,
           productModel: ASSETS.productModels[0],
           scheduledFor: moment().add(1, 'day'),
           productExpiry: expiresIn3,
@@ -153,6 +157,7 @@ describe('inventoryCtrl', function () {
           },
         },
         {
+          shipment: ASSETS.entryShipment,
           productModel: ASSETS.productModels[0],
           scheduledFor: moment().add(1, 'day'),
           productExpiry: expiresIn4,
@@ -168,8 +173,9 @@ describe('inventoryCtrl', function () {
       })
       .then(() => {
         // schedule and effectivate some exits
-        return _scheduleExits(ASSETS.user, ASSETS.invoices[1], [
+        return _scheduleExits(ASSETS.user, ASSETS.organization, [
           {
+            shipment: ASSETS.exitShipment,
             productModel: ASSETS.productModels[0],
             scheduledFor: moment().add(1, 'day'),
             productExpiry: expiresIn3,
@@ -187,7 +193,7 @@ describe('inventoryCtrl', function () {
       .then(() => {
         // count product-1 at org-1
         return inventoryCtrl.computeOrgProductSummary(
-          ASSETS.orgs[0],
+          ASSETS.organization,
           ASSETS.productModels[0]
         );
       })
@@ -201,8 +207,9 @@ describe('inventoryCtrl', function () {
 
     it('should only count records with status at `effective`', function () {
       // schedule and effectivate entries
-      return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
+      return _scheduleEntries(ASSETS.user, ASSETS.organization, [
         {
+          shipment: ASSETS.entryShipment,
           productModel: ASSETS.productModels[0],
           scheduledFor: moment().add(1, 'day'),
           productExpiry: moment(Date.now()).add(3, 'days'),
@@ -212,6 +219,7 @@ describe('inventoryCtrl', function () {
           }
         },
         {
+          shipment: ASSETS.entryShipment,
           productModel: ASSETS.productModels[0],
           scheduledFor: moment().add(1, 'day'),
           productExpiry: moment(Date.now()).add(3, 'days'),
@@ -227,8 +235,9 @@ describe('inventoryCtrl', function () {
       })
       .then(() => {
         // schedule and DO NOT effectivate
-        return _scheduleEntries(ASSETS.user, ASSETS.invoices[0], [
+        return _scheduleEntries(ASSETS.user, ASSETS.organization, [
           {
+            shipment: ASSETS.entryShipment,
             productModel: ASSETS.productModels[0],
             scheduledFor: moment().add(1, 'day'),
             productExpiry: moment(Date.now()).add(3, 'days'),
@@ -242,7 +251,7 @@ describe('inventoryCtrl', function () {
       .then(() => {
         // count product-1 at org-1
         return inventoryCtrl.computeOrgProductSummary(
-          ASSETS.orgs[0],
+          ASSETS.organization,
           ASSETS.productModels[0]
         );
       })

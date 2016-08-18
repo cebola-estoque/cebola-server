@@ -16,6 +16,13 @@ var productModelSchema = new Schema({
   sku: {
     type: String,
     required: true,
+  },
+
+  ownerOrg: {
+    _id: {
+      type: String,
+      required: true,
+    }
   }
 });
 

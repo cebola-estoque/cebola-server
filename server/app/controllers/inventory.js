@@ -7,14 +7,14 @@ const SHARED_CONSTANTS = require('../../../shared/constants');
 
 module.exports = function (app, options) {
 
-  const Record = app.services.mongoose.models.Record;
+  const Operation = app.services.mongoose.models.Operation;
 
   const errors = app.errors;
 
-  var inventoryCtrl = {};
+  var ctrl = {};
 
-  inventoryCtrl.computeSummary = function (query) {
-    var aggregation = Record.aggregate();
+  ctrl.computeSummary = function (query) {
+    var aggregation = Operation.aggregate();
 
     query = query || {};
 
@@ -66,24 +66,25 @@ module.exports = function (app, options) {
     return aggregation.exec();
   };
 
-  inventoryCtrl.computeOrgProductSummary = function (organization, productModel, query) {
+  ctrl.computeOrgProductSummary = function (organization, productModel, query) {
     // ensure the orgId is in string format
     var orgId = organization._id.toString();
 
     query = query || {};
 
     // scoped by organization
-    query['$or'] = [
-      { 'invoice.destination._id': orgId },
-      { 'invoice.source._id': orgId }
-    ];
+    // query['$or'] = [
+    //   { 'invoice.destination._id': orgId },
+    //   { 'invoice.source._id': orgId }
+    // ];
+    query['organization._id'] = orgId;
 
     query['productModel._id'] = productModel._id.toString();
 
-    return inventoryCtrl.computeSummary(query);
+    return ctrl.computeSummary(query);
   };
 
-  inventoryCtrl.computeOrgSummary = function (organization, query) {
+  ctrl.computeOrgSummary = function (organization, query) {
 
     // ensure the orgId is in string format
     var orgId = organization._id.toString();
@@ -91,22 +92,23 @@ module.exports = function (app, options) {
     query = query || {};
 
     // scoped by organization
-    query['$or'] = [
-      { 'invoice.destination._id': orgId },
-      { 'invoice.source._id': orgId }
-    ];
+    // query['$or'] = [
+    //   { 'invoice.destination._id': orgId },
+    //   { 'invoice.source._id': orgId }
+    // ];
+    query['organization._id'] = orgId;
     
-    return inventoryCtrl.computeSummary(query);
+    return ctrl.computeSummary(query);
 
   };
 
-  inventoryCtrl.computeOrgProductAvailability = function (organization, productModel, productExpiry, requestedQuantity) {
+  ctrl.computeOrgProductAvailability = function (organization, productModel, productExpiry, requestedQuantity) {
 
     // normalize the product expiry to the end of the day
     // convert the moment.js date into a native JS Date
     productExpiry = moment(productExpiry).endOf('day').toDate();
 
-    return inventoryCtrl.computeOrgProductSummary(organization, productModel, {
+    return ctrl.computeOrgProductSummary(organization, productModel, {
       productExpiry: productExpiry,
       'quantity.unit': requestedQuantity.unit,
     })
@@ -127,6 +129,6 @@ module.exports = function (app, options) {
     })
   };
   
-  return inventoryCtrl;
+  return ctrl;
 
 };
