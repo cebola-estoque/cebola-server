@@ -3,9 +3,8 @@ const bodyParser = require('body-parser');
 
 module.exports = function (app, options) {
 
-  app.post('/organization/:organizationId/shipments'
+  app.post('/shipments',
     app.middleware.authenticate(),
-    app.middleware.loadOrganization(),
     bodyParser.json(),
     function (req, res, next) {
 
@@ -19,14 +18,15 @@ module.exports = function (app, options) {
     }
   );
 
-  app.get('/organization/:organizationId/shipment/:shipmentId'
+  app.get('/shipments',
     app.middleware.authenticate(),
-    app.middleware.loadOrganization(),
-    app.middleware.loadShipment(),
     function (req, res, next) {
-      res.json({
-        _id: req.shipment._id
-      })
+
+      app.controllers.shipment.list()
+        .then((shipments) => {
+          res.json(shipments);
+        })
+        .catch(next);
     }
   );
 

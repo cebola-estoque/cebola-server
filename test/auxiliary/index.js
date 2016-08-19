@@ -131,5 +131,9 @@ exports.teardown = function () {
   }))
   .then(() => {
     TEARDOWN_CALLBACKS = [];
+  })
+  .catch((err) => {
+    console.warn(err);
+    throw err;
   });
 };

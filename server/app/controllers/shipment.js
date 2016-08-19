@@ -9,17 +9,12 @@ module.exports = function (app, options) {
 
   var ctrl = {};
 
-  ctrl.create = function (author, organization, data) {
+  ctrl.create = function (author, data) {
     var shipment = new Shipment(data);
 
     shipment.set('author', {
       _id: author._id,
       name: author.name,
-    });
-
-    shipment.set('organization', {
-      _id: organization._id,
-      name: organization.name,
     });
 
     return shipment.save();
@@ -36,6 +31,10 @@ module.exports = function (app, options) {
         return shipment;
       }
     });
+  };
+
+  ctrl.list = function () {
+    return Shipment.find();
   };
 
   return ctrl;

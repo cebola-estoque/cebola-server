@@ -18,8 +18,6 @@ module.exports = function (app, options) {
   mongooseService.models = {};
   mongooseService.models.User =
     require('../models/user')(conn, app, options);
-  mongooseService.models.Organization =
-    require('../models/organization')(conn, app, options);
   mongooseService.models.OrganizationContact =
     require('../models/organization-contact')(conn, app, options);
   mongooseService.models.ProductModel =

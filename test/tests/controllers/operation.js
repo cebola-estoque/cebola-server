@@ -34,22 +34,10 @@ describe('operationCtrl', function () {
       .then((user) => {
         ASSETS.user = user
 
-        // register one organization
-        return ASSETS.inventoryAPI.controllers.organization.create(ASSETS.user, {
-          name: 'Org 1',
-          document: {
-            type: 'CNPJ',
-            value: '12345678',
-          }
-        });
-      })
-      .then((organization) => {
-        ASSETS.organization = organization;
-
         // create a productModel
         
         return ASSETS.inventoryAPI.controllers.productModel.create(
-          ASSETS.user, ASSETS.organization,
+          ASSETS.user, 
           {
             name: 'Test product',
             sku: '1823789127398',
@@ -61,7 +49,7 @@ describe('operationCtrl', function () {
 
         // create an entry shipment
         return ASSETS.inventoryAPI.controllers.shipment.create(
-          ASSETS.user, ASSETS.organization,
+          ASSETS.user,
           {
             type: 'entry',
             source: {
@@ -84,7 +72,7 @@ describe('operationCtrl', function () {
     it('should create a new scheduled entry operation in the database', function () {
 
       return operationCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -116,7 +104,7 @@ describe('operationCtrl', function () {
       var expiry = moment(Date.now()).add(10, 'days');
 
       return operationCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -140,7 +128,7 @@ describe('operationCtrl', function () {
 
     it('should require the quantity to be positive for entries', function () {
       return operationCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -167,7 +155,7 @@ describe('operationCtrl', function () {
       var expiry = moment(Date.now()).add(10, 'days');
 
       return operationCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -185,7 +173,7 @@ describe('operationCtrl', function () {
       })
       .then(() => {
         return operationCtrl.scheduleExit(
-          ASSETS.user, ASSETS.organization,
+          ASSETS.user,
           {
             shipment: ASSETS.shipment,
             productModel: ASSETS.productModel,
@@ -215,7 +203,7 @@ describe('operationCtrl', function () {
 
     it('should prevent scheduling of exits that exceed amount available', function () {
       return operationCtrl.scheduleExit(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -237,7 +225,7 @@ describe('operationCtrl', function () {
       var expiry = moment(Date.now()).add(10, 'days');
 
       return operationCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -255,7 +243,7 @@ describe('operationCtrl', function () {
       })
       .then(() => {
         return operationCtrl.scheduleExit(
-          ASSETS.user, ASSETS.organization,
+          ASSETS.user,
           {
             shipment: ASSETS.shipment,
             productModel: ASSETS.productModel,
@@ -279,7 +267,7 @@ describe('operationCtrl', function () {
   describe('effectivate', function () {
     it('should modify the status of the scheduledRecord to `effective`', function () {
       return operationCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -313,7 +301,7 @@ describe('operationCtrl', function () {
   describe('cancel', function () {
     it('should modify the status of the scheduledRecord to `cancelled`', function () {
       return operationCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -347,7 +335,7 @@ describe('operationCtrl', function () {
   describe('registerLoss', function () {
     it('should create a operation of type `loss`', function () {
       return operationCtrl.scheduleEntry(
-        ASSETS.user, ASSETS.organization,
+        ASSETS.user,
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,
@@ -365,7 +353,7 @@ describe('operationCtrl', function () {
       })
       .then((entryRecord) => {
         return operationCtrl.registerLoss(
-          ASSETS.user, ASSETS.organization,
+          ASSETS.user,
           {
             shipment: ASSETS.shipment,
             productModel: ASSETS.productModel,
@@ -389,7 +377,7 @@ describe('operationCtrl', function () {
 
     it('should verify product availability prior to registering loss', function () {
       return operationCtrl.registerLoss(
-        ASSETS.user, ASSETS.organization, 
+        ASSETS.user, 
         {
           shipment: ASSETS.shipment,
           productModel: ASSETS.productModel,

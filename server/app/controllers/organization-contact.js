@@ -14,8 +14,10 @@ module.exports = function (app, options) {
    * @param  {Object} orgData
    * @return {Bluebird -> org}
    */
-  ctrl.create = function (orgData) {
+  ctrl.create = function (authorData, orgData) {
     var org = new OrganizationContact(orgData);
+
+    org.set('author', authorData);
 
     return org.save();
   };
@@ -31,6 +33,22 @@ module.exports = function (app, options) {
         return organization;
       }
     });
+  };
+
+  ctrl.list = function () {
+    return OrganizationContact.find();
+  };
+
+  ctrl.search = function (searchQuery) {
+    return OrganizationContact.find({
+      $text: {
+        $search: searchQuery,
+      }
+    }, {
+      score: { $meta: 'textScore' }
+    })
+    .sort({ score: { $meta : 'textScore' } })
+    .exec();
   };
 
   return ctrl;

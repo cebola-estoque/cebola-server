@@ -32,7 +32,7 @@ module.exports = function (app, options) {
 
     app.controllers.auth.verifyToken(token)
       .then(function (decoded) {
-
+        
         // make the user data available to middleware after
         req.tokenData = decoded;
 

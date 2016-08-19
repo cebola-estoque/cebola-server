@@ -3,30 +3,43 @@ const bodyParser = require('body-parser');
 
 module.exports = function (app, options) {
 
-  app.post('/organization/:organizationId/shipments'
+  app.post('/product-models',
     app.middleware.authenticate(),
-    app.middleware.loadOrganization(),
     bodyParser.json(),
     function (req, res, next) {
 
-      app.controllers.create(req.tokenData, req.organization, req.body)
-        .then((shipment) => {
-          res.json({
-            _id: shipment._id,
-          });
+      var authorData = {
+        _id: req.tokenData.sub,
+        name: req.tokenData.name,
+      };
+
+      app.controllers.productModel.create(authorData, req.body)
+        .then((productModel) => {
+          res.json(productModel);
         })
         .catch(next);
     }
   );
 
-  app.get('/organization/:organizationId/shipment/:shipmentId'
+  app.get('/product-models',
     app.middleware.authenticate(),
-    app.middleware.loadOrganization(),
-    app.middleware.loadShipment(),
     function (req, res, next) {
-      res.json({
-        _id: req.shipment._id
-      })
+
+      var searchQuery = req.query.q;
+
+      var promise;
+
+      if (searchQuery) {
+        promise = app.controllers.productModel.search(searchQuery)
+      } else {
+        promise = app.controllers.productModel.list();
+      }
+
+      promise
+        .then((productModels) => {
+          res.json(productModels);
+        })
+        .catch(next);
     }
   );
 

@@ -20,18 +20,18 @@ var organizationContactSchema = new Schema({
     },
   },
 
-  ownerOrg: {
-    _id: {
-      type: String,
-      required: true,
-    },
-  },
+  // ownerOrg: {
+  //   _id: {
+  //     type: String,
+  //     required: true,
+  //   },
+  // },
 
-  referredOrg: {
-    _id: {
-      type: String,
-    },
-  },
+  // referredOrg: {
+  //   _id: {
+  //     type: String,
+  //   },
+  // },
 
   document: {
     value: {
@@ -44,6 +44,10 @@ var organizationContactSchema = new Schema({
       required: true,
     }
   }
+});
+
+organizationContactSchema.index({
+  name: 'text',
 });
 
 // takes the connection and options and returns the model

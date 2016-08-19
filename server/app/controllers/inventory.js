@@ -66,49 +66,37 @@ module.exports = function (app, options) {
     return aggregation.exec();
   };
 
-  ctrl.computeOrgProductSummary = function (organization, productModel, query) {
-    // ensure the orgId is in string format
-    var orgId = organization._id.toString();
+  ctrl.search = function (textQuery) {
+    return ctrl.computeSummary({
+      $text: {
+        $search: textQuery,
+      }
+    });
+  };
+
+  ctrl.computeOrgProductSummary = function (productModel, query) {
 
     query = query || {};
-
-    // scoped by organization
-    // query['$or'] = [
-    //   { 'invoice.destination._id': orgId },
-    //   { 'invoice.source._id': orgId }
-    // ];
-    query['organization._id'] = orgId;
 
     query['productModel._id'] = productModel._id.toString();
 
     return ctrl.computeSummary(query);
   };
 
-  ctrl.computeOrgSummary = function (organization, query) {
-
-    // ensure the orgId is in string format
-    var orgId = organization._id.toString();
-
+  ctrl.computeOrgSummary = function (query) {
     query = query || {};
-
-    // scoped by organization
-    // query['$or'] = [
-    //   { 'invoice.destination._id': orgId },
-    //   { 'invoice.source._id': orgId }
-    // ];
-    query['organization._id'] = orgId;
     
     return ctrl.computeSummary(query);
 
   };
 
-  ctrl.computeOrgProductAvailability = function (organization, productModel, productExpiry, requestedQuantity) {
+  ctrl.computeOrgProductAvailability = function (productModel, productExpiry, requestedQuantity) {
 
     // normalize the product expiry to the end of the day
     // convert the moment.js date into a native JS Date
     productExpiry = moment(productExpiry).endOf('day').toDate();
 
-    return ctrl.computeOrgProductSummary(organization, productModel, {
+    return ctrl.computeOrgProductSummary(productModel, {
       productExpiry: productExpiry,
       'quantity.unit': requestedQuantity.unit,
     })

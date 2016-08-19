@@ -1,5 +1,6 @@
 // third-party
 const express = require('express');
+const cors    = require('cors');
 
 /**
  * Function that instantiates the application
@@ -28,8 +29,6 @@ function createInventoryAPI(options) {
 
   // instantiate controllers
   app.controllers = {};
-  app.controllers.organization =
-    require('./app/controllers/organization')(app, options);
   app.controllers.organizationContact =
     require('./app/controllers/organization-contact')(app, options);
   app.controllers.productModel =
@@ -49,6 +48,29 @@ function createInventoryAPI(options) {
   app.middleware = {};
   app.middleware.authenticate =
     require('./app/middleware/authenticate').bind(null, app);
+  app.middleware.loadUser =
+    require('./app/middleware/load-user').bind(null, app);
+
+  // CORS
+  var corsWhitelist = options.corsWhitelist || [];
+  corsWhitelist = (typeof corsWhitelist === 'string') ?
+    corsWhitelist.split(',') : corsWhitelist;
+
+  var _corsMiddleware = cors({
+    origin: function (origin, cb) {
+      var originIsWhitelisted = (corsWhitelist.indexOf(origin) !== -1);
+
+      if (!originIsWhitelisted) {
+        console.warn('request from not-whitelisted origin %s', origin, corsWhitelist);
+      }
+
+      cb(null, originIsWhitelisted);
+    }
+  });
+
+  app.options('*', _corsMiddleware);
+  app.use(_corsMiddleware);
+
 
   // define description route
   app.get('/who', function (req, res) {
@@ -56,10 +78,16 @@ function createInventoryAPI(options) {
   });
 
   // load routes
-  // require('./app/routes/inventory')(app, options);
+  require('./app/routes/user')(app, options);
+  require('./app/routes/auth')(app, options);
+  require('./app/routes/organization-contact')(app, options);
+  require('./app/routes/product-model')(app, options);
+  require('./app/routes/shipment')(app, options);
+  require('./app/routes/inventory')(app, options);
 
   // load error-handlers
   require('./app/error-handlers/inventory-api-error')(app, options);
+  require('./app/error-handlers/mongoose-validation-error')(app, options);
 
   return app;
 }

@@ -18,13 +18,19 @@ var productModelSchema = new Schema({
     required: true,
   },
 
-  ownerOrg: {
-    _id: {
-      type: String,
-      required: true,
-    }
-  }
+  // ownerOrg: {
+  //   _id: {
+  //     type: String,
+  //     required: true,
+  //   }
+  // }
 });
+
+productModelSchema.index({
+  name: 'text',
+  // sku: 'text'
+});
+
 
 // takes the connection and options and returns the model
 module.exports = function (conn, app, options) {

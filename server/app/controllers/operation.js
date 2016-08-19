@@ -10,7 +10,7 @@ const RECORD_STATUSES = SHARED_CONSTANTS.RECORD_STATUSES;
 module.exports = function (app, options) {
 
   const Organization = app.services.mongoose.models.Organization;
-  const Shipment      = app.services.mongoose.models.Shipment;
+  const Shipment     = app.services.mongoose.models.Shipment;
   const Operation    = app.services.mongoose.models.Operation;
 
   const errors = app.errors;
@@ -30,30 +30,25 @@ module.exports = function (app, options) {
     });
   };
 
-  ctrl.scheduleEntry = function (author, organization, operationData) {
+  ctrl.scheduleEntry = function (author, operationData) {
 
     var operation = new Operation(operationData);
 
     operation.set('type', RECORD_TYPES.ENTRY);
 
     operation.setAuthor(author);
-    operation.set('organization', {
-      _id: organization._id,
-    })
-
     operation.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
 
     return operation.save();
   };
 
-  ctrl.scheduleExit = function (author, organization, operationData) {
+  ctrl.scheduleExit = function (author, operationData) {
 
     /**
      * First check if there
      * are enough items to be scheduled for exit
      */
     return app.controllers.inventory.computeOrgProductAvailability(
-      organization,
       operationData.productModel,
       operationData.productExpiry,
       operationData.quantity
@@ -65,9 +60,6 @@ module.exports = function (app, options) {
       operation.set('type', RECORD_TYPES.EXIT);
 
       operation.setAuthor(author);
-      operation.set('organization', {
-        _id: organization._id,
-      });
 
       operation.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
 
@@ -113,13 +105,12 @@ module.exports = function (app, options) {
     return operation.save();
   };
 
-  ctrl.registerLoss = function (author, organization, operationData) {
+  ctrl.registerLoss = function (author, operationData) {
     /**
      * First check if there
      * are enough items to be scheduled for loss
      */
     return app.controllers.inventory.computeOrgProductAvailability(
-      organization,
       operationData.productModel,
       operationData.productExpiry,
       operationData.quantity
@@ -131,9 +122,6 @@ module.exports = function (app, options) {
       operation.set('type', RECORD_TYPES.LOSS);
 
       operation.setAuthor(author);
-      operation.set('organization', {
-        _id: organization._id,
-      });
       
       operation.setStatus(RECORD_STATUSES.SCHEDULED, 'UserRegistered');
 

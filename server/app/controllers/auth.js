@@ -41,6 +41,7 @@ module.exports = function (app, options) {
     .then((user) => {
 
       if (!user) {
+        console.log('user missing')
         return Bluebird.reject(new errors.Unauthorized());
       }
 
@@ -51,6 +52,7 @@ module.exports = function (app, options) {
     .then((valid) => {
 
       if (!valid) {
+        console.log('invalid password')
         return Bluebird.reject(new errors.Unauthorized());
       }
 

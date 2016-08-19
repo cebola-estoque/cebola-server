@@ -24,17 +24,17 @@ var shipmentSchema = new Schema({
     required: true,
   },
 
-  organization: {
-    _id: {
-      type: String,
-      required: true,
-    },
+  // organization: {
+  //   _id: {
+  //     type: String,
+  //     required: true,
+  //   },
 
-    name: {
-      type: String,
-      required: true,
-    }
-  },
+  //   name: {
+  //     type: String,
+  //     required: true,
+  //   }
+  // },
   
   /**
    * Stores a reference to the source
@@ -48,7 +48,17 @@ var shipmentSchema = new Schema({
 
     name: {
       type: String,
-    }
+    },
+
+    document: {
+      value: {
+        type: String,
+      },
+
+      type: {
+        type: String,
+      }
+    },
   },
 
   /**
@@ -63,7 +73,17 @@ var shipmentSchema = new Schema({
 
     name: {
       type: String,
-    }
+    },
+
+    document: {
+      value: {
+        type: String,
+      },
+
+      type: {
+        type: String,
+      }
+    },
   },
 
   document: {

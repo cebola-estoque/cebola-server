@@ -14,21 +14,19 @@ describe('inventoryCtrl', function () {
   var inventoryCtrl;
   var operationCtrl;
 
-  function _scheduleEntries(user, organization, entriesData) {
+  function _scheduleEntries(user, entriesData) {
     return Bluebird.all(entriesData.map((entryData) => {
       return operationCtrl.scheduleEntry(
         user,
-        organization,
         entryData
       );
     }));
   }
 
-  function _scheduleExits(user, organization, exitsData) {
+  function _scheduleExits(user, exitsData) {
     return Bluebird.all(exitsData.map((exitData) => {
       return operationCtrl.scheduleExit(
         user,
-        organization,
         exitData
       );
     }));
@@ -59,30 +57,17 @@ describe('inventoryCtrl', function () {
 
         ASSETS.user = user;
 
-        // create an organization
-        return ASSETS.inventoryAPI.controllers.organization.create(ASSETS.user, {
-          name: 'Org 1',
-          document: {
-            type: 'CNPJ',
-            value: '123455',
-          }
-        });
-
-      })
-      .then((organization) => {
-        ASSETS.organization = organization;
-
         // create 2 product models
         return Bluebird.all([
           ASSETS.inventoryAPI.controllers.productModel.create(
-            ASSETS.user, ASSETS.organization,
+            ASSETS.user,
             {
               name: 'Test product 1',
               sku: '1823789127398',
             }
           ),
           ASSETS.inventoryAPI.controllers.productModel.create(
-            ASSETS.user, ASSETS.organization,
+            ASSETS.user,
             {
               name: 'Test product 2',
               sku: '893u4189u12',
@@ -96,7 +81,7 @@ describe('inventoryCtrl', function () {
         // create 2 shipments
         return Bluebird.all([
           ASSETS.inventoryAPI.controllers.shipment.create(
-            ASSETS.user, ASSETS.organization,
+            ASSETS.user,
             {
               type: 'entry',
               source: {
@@ -105,7 +90,7 @@ describe('inventoryCtrl', function () {
             }
           ),
           ASSETS.inventoryAPI.controllers.shipment.create(
-            ASSETS.user, ASSETS.organization,
+            ASSETS.user,
             {
               type: 'exit',
               destination: {
@@ -134,7 +119,7 @@ describe('inventoryCtrl', function () {
       var expiresIn4 = moment(Date.now()).add(4, 'days')
 
       // schedule and effectivate entries
-      return _scheduleEntries(ASSETS.user, ASSETS.organization, [
+      return _scheduleEntries(ASSETS.user, [
         {
           shipment: ASSETS.entryShipment,
           productModel: ASSETS.productModels[0],
@@ -173,7 +158,7 @@ describe('inventoryCtrl', function () {
       })
       .then(() => {
         // schedule and effectivate some exits
-        return _scheduleExits(ASSETS.user, ASSETS.organization, [
+        return _scheduleExits(ASSETS.user, [
           {
             shipment: ASSETS.exitShipment,
             productModel: ASSETS.productModels[0],
@@ -193,7 +178,6 @@ describe('inventoryCtrl', function () {
       .then(() => {
         // count product-1 at org-1
         return inventoryCtrl.computeOrgProductSummary(
-          ASSETS.organization,
           ASSETS.productModels[0]
         );
       })
@@ -207,7 +191,7 @@ describe('inventoryCtrl', function () {
 
     it('should only count records with status at `effective`', function () {
       // schedule and effectivate entries
-      return _scheduleEntries(ASSETS.user, ASSETS.organization, [
+      return _scheduleEntries(ASSETS.user, [
         {
           shipment: ASSETS.entryShipment,
           productModel: ASSETS.productModels[0],
@@ -235,7 +219,7 @@ describe('inventoryCtrl', function () {
       })
       .then(() => {
         // schedule and DO NOT effectivate
-        return _scheduleEntries(ASSETS.user, ASSETS.organization, [
+        return _scheduleEntries(ASSETS.user, [
           {
             shipment: ASSETS.entryShipment,
             productModel: ASSETS.productModels[0],
@@ -251,7 +235,6 @@ describe('inventoryCtrl', function () {
       .then(() => {
         // count product-1 at org-1
         return inventoryCtrl.computeOrgProductSummary(
-          ASSETS.organization,
           ASSETS.productModels[0]
         );
       })

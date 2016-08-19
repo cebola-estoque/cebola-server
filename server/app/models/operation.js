@@ -43,12 +43,12 @@ var operationSchema = new Schema({
     }
   },
 
-  organization: {
-    _id: {
-      type: String,
-      required: true,
-    }
-  },
+  // organization: {
+  //   _id: {
+  //     type: String,
+  //     required: true,
+  //   }
+  // },
 
   shipment: {
     _id: {
