@@ -24,6 +24,11 @@ var shipmentSchema = new Schema({
     required: true,
   },
 
+  scheduledFor: {
+    type: Date,
+    required: true,
+  },
+
   // organization: {
   //   _id: {
   //     type: String,

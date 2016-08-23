@@ -42,6 +42,23 @@ module.exports = function (app, options) {
     return operation.save();
   };
 
+  ctrl.scheduleOperations = function (author, shipment, operationsData) {
+
+    operationsData = Array.isArray(operationsData) ? operationsData : [operationsData];
+
+    return Bluebird.all(operationsData.map(function (operationData) {
+
+      var operation = new Operation(operationData);
+      
+      operation.setShipment(shipment);
+      operation.setAuthor(author);
+      operation.setStatus(RECORD_STATUSES.SCHEDULED, 'UserScheduled');
+
+      return operation.save();
+    }));
+
+  };
+
   ctrl.scheduleExit = function (author, operationData) {
 
     /**

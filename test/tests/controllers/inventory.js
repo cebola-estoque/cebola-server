@@ -84,6 +84,7 @@ describe('inventoryCtrl', function () {
             ASSETS.user,
             {
               type: 'entry',
+              scheduledFor: moment().add(1, 'day'),
               source: {
                 _id: '12345',
               },
@@ -93,6 +94,7 @@ describe('inventoryCtrl', function () {
             ASSETS.user,
             {
               type: 'exit',
+              scheduledFor: moment().add(1, 'day'),
               destination: {
                 _id: '09876',
               }

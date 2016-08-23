@@ -8,11 +8,26 @@ module.exports = function (app, options) {
     bodyParser.json(),
     function (req, res, next) {
 
-      app.controllers.create(req.tokenData, req.organization, req.body)
+      var authorData = {
+        _id: req.tokenData.sub,
+        name: req.tokenData.name,
+      };
+
+      var operations = req.body.operations || [];
+
+      app.controllers.shipment
+        .create(authorData, req.body)
         .then((shipment) => {
-          res.json({
-            _id: shipment._id,
-          });
+
+          return app.controllers.operation
+            .scheduleOperations(
+              authorData,
+              shipment,
+              operations
+            );
+        })
+        .then((operations) => {
+          res.json(operations);
         })
         .catch(next);
     }

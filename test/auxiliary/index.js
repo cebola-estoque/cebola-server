@@ -13,7 +13,7 @@ if (process.env.DEBUG === 'TRUE') {
   require('mongoose').set('debug', true);
 }
 
-const TEST_DB_URI = 'mongodb://localhost:27017/inventory-api';
+const TEST_DB_URI = 'mongodb://localhost:27017/inventory-api-test-db';
 
 exports.logError = function (err) {
   console.warn(err);

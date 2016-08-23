@@ -52,6 +52,7 @@ describe('operationCtrl', function () {
           ASSETS.user,
           {
             type: 'entry',
+            scheduledFor: moment().add(1, 'day'),
             source: {
               _id: '123456',
               name: 'Some other org',

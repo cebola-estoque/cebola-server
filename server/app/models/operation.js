@@ -164,6 +164,10 @@ var operationSchema = new Schema({
   },
 });
 
+operationSchema.index({
+  'productModel.name': 'text',
+});
+
 /**
  * Normalize data before validation is run
  */
@@ -233,6 +237,15 @@ module.exports = function (conn, app, options) {
     this.set('shipment', {
       _id: shipment._id,
     });
+
+    /**
+     * Operation's type matches the shipment's
+     */
+    this.set('type', shipment.type);
+    /**
+     * Operation's scheduledFor matches the shipment's
+     */
+    this.set('scheduledFor', shipment.scheduledFor);
   };
 
   /**

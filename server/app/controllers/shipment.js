@@ -20,6 +20,27 @@ module.exports = function (app, options) {
     return shipment.save();
   };
 
+  ctrl.createWithOperations = function (author, data, operations) {
+    ctrl
+      .create(author, req.body)
+      .then((shipment) => {
+
+        return app.controllers.operation
+          .scheduleOperations(
+            authorData,
+            shipment,
+            operations
+          );
+      })
+      .catch((err) => {
+
+        // 
+
+      });
+  };
+
+  // ctrl.
+
   ctrl.getById = function (id) {
     return Shipment.findOne({
       _id: id,
