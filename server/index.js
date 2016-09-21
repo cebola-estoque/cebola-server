@@ -29,20 +29,23 @@ function createInventoryAPI(options) {
 
   // instantiate controllers
   app.controllers = {};
-  app.controllers.organizationContact =
-    require('./app/controllers/organization-contact')(app, options);
-  app.controllers.productModel =
-    require('./app/controllers/product-model')(app, options);
+  // app.controllers.organizationContact =
+  //   require('./app/controllers/organization-contact')(app, options);
+  // app.controllers.productModel =
+  //   require('./app/controllers/product-model')(app, options);
   app.controllers.user =
     require('./app/controllers/user')(app, options);
   app.controllers.auth =
     require('./app/controllers/auth')(app, options);
-  app.controllers.operation =
-    require('./app/controllers/operation')(app, options);
-  app.controllers.shipment =
-    require('./app/controllers/shipment')(app, options);
-  app.controllers.inventory =
-    require('./app/controllers/inventory')(app, options);
+  // app.controllers.operation =
+  //   require('./app/controllers/operation')(app, options);
+  // app.controllers.shipment =
+  //   require('./app/controllers/shipment')(app, options);
+  // app.controllers.inventory =
+  //   require('./app/controllers/inventory')(app, options);
+  
+  app.controllers.organization =
+    require('./app/controllers/organization')(app, options);
 
   // instantiate middleware for usage in routes
   app.middleware = {};

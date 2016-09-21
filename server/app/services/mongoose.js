@@ -18,12 +18,12 @@ module.exports = function (app, options) {
   mongooseService.models = {};
   mongooseService.models.User =
     require('../models/user')(conn, app, options);
-  mongooseService.models.OrganizationContact =
-    require('../models/organization-contact')(conn, app, options);
-  mongooseService.models.ProductModel =
-    require('../models/product-model')(conn, app, options);
-  mongooseService.models.Operation =
-    require('../models/operation')(conn, app, options);
-  mongooseService.models.Shipment =
-    require('../models/shipment')(conn, app, options);
+  // mongooseService.models.OrganizationContact =
+  //   require('../models/organization-contact')(conn, app, options);
+  // mongooseService.models.ProductModel =
+  //   require('../models/product-model')(conn, app, options);
+  // mongooseService.models.Operation =
+  //   require('../models/operation')(conn, app, options);
+  // mongooseService.models.Shipment =
+  //   require('../models/shipment')(conn, app, options);
 };
