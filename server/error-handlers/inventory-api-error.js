@@ -4,6 +4,8 @@ module.exports = function (app, options) {
 
   app.use(function (err, req, res, next) {
 
+    console.log(err);
+
     if (err instanceof errors.InventoryAPIError) {
 
       switch (err.name) {

@@ -2,7 +2,7 @@
 const Bluebird = require('bluebird');
 
 // constants
-const SHARED_CONSTANTS = require('../../../shared/constants');
+const SHARED_CONSTANTS = require('../../shared/constants');
 
 module.exports = function (app, options) {
 

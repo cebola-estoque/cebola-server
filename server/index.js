@@ -5,7 +5,7 @@ const cors    = require('cors');
 /**
  * Function that instantiates the application
  */
-function createInventoryAPI(options) {
+function cebolaServer(options) {
 
   if (!options.mongodbURI) {
     throw new Error('mongodbURI is required');
@@ -25,34 +25,38 @@ function createInventoryAPI(options) {
   app.errors = require('../shared/errors');
 
   // setup services
-  require('./app/services')(app, options);
+  require('./services')(app, options);
 
   // instantiate controllers
   app.controllers = {};
   // app.controllers.organizationContact =
-  //   require('./app/controllers/organization-contact')(app, options);
+  //   require('./controllers/organization-contact')(app, options);
   // app.controllers.productModel =
-  //   require('./app/controllers/product-model')(app, options);
+  //   require('./controllers/product-model')(app, options);
   app.controllers.user =
-    require('./app/controllers/user')(app, options);
+    require('./controllers/user')(app, options);
   app.controllers.auth =
-    require('./app/controllers/auth')(app, options);
-  // app.controllers.operation =
-  //   require('./app/controllers/operation')(app, options);
-  // app.controllers.shipment =
-  //   require('./app/controllers/shipment')(app, options);
+    require('./controllers/auth')(app, options);
+  app.controllers.operation =
+    require('./controllers/operation')(app, options);
+  app.controllers.shipment =
+    require('./controllers/shipment')(app, options);
   // app.controllers.inventory =
-  //   require('./app/controllers/inventory')(app, options);
+  //   require('./controllers/inventory')(app, options);
   
   app.controllers.organization =
-    require('./app/controllers/organization')(app, options);
+    require('./controllers/organization')(app, options);
+  app.controllers.productModel =
+    require('./controllers/product-model')(app, options);
 
   // instantiate middleware for usage in routes
   app.middleware = {};
   app.middleware.authenticate =
-    require('./app/middleware/authenticate').bind(null, app);
+    require('./middleware/authenticate').bind(null, app);
   app.middleware.loadUser =
-    require('./app/middleware/load-user').bind(null, app);
+    require('./middleware/load-user').bind(null, app);
+  app.middleware.loadShipment =
+    require('./middleware/load-shipment').bind(null, app);
 
   // CORS
   var corsWhitelist = options.corsWhitelist || [];
@@ -81,18 +85,17 @@ function createInventoryAPI(options) {
   });
 
   // load routes
-  require('./app/routes/user')(app, options);
-  require('./app/routes/auth')(app, options);
-  require('./app/routes/organization-contact')(app, options);
-  require('./app/routes/product-model')(app, options);
-  require('./app/routes/shipment')(app, options);
-  require('./app/routes/inventory')(app, options);
+  require('./routes/user')(app, options);
+  require('./routes/auth')(app, options);
+  require('./routes/organization')(app, options);
+  require('./routes/product-model')(app, options);
+  require('./routes/shipment')(app, options);
 
   // load error-handlers
-  require('./app/error-handlers/inventory-api-error')(app, options);
-  require('./app/error-handlers/mongoose-validation-error')(app, options);
+  require('./error-handlers/inventory-api-error')(app, options);
+  require('./error-handlers/mongoose-validation-error')(app, options);
 
   return app;
 }
 
-module.exports = createInventoryAPI;
+module.exports = cebolaServer;

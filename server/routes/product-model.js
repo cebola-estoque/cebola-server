@@ -8,12 +8,7 @@ module.exports = function (app, options) {
     bodyParser.json(),
     function (req, res, next) {
 
-      var authorData = {
-        _id: req.tokenData.sub,
-        name: req.tokenData.name,
-      };
-
-      app.controllers.productModel.create(authorData, req.body)
+      app.controllers.productModel.create(req.body)
         .then((productModel) => {
           res.json(productModel);
         })

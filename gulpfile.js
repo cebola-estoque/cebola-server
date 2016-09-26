@@ -8,7 +8,7 @@ const istanbul    = require('gulp-istanbul');
 const mocha       = require('gulp-mocha');
 
 // constants
-const DEV_DB_URI = 'mongodb://localhost:27017/inventory-api-dev-db';
+const DEV_DB_URI = 'mongodb://localhost:27017/cebola-server-dev-db';
 
 /**
  * Run server and restart it everytime server file changes
@@ -17,7 +17,7 @@ gulp.task('nodemon', function () {
   gulpNodemon({
     script: 'cli/start.js',
     env: {
-      PORT: '8000',
+      PORT: '7000',
       MONGODB_URI: DEV_DB_URI,
       SECRET: 'TEST_SECRET',
       CORS_WHITELIST: 'http://localhost:8000,http://localhost:8001,http://localhost:8002,http://localhost:8003,http://localhost:9000',

@@ -3,7 +3,7 @@ const Bluebird = require('bluebird');
 const jwt      = require('jsonwebtoken');
 
 // constants
-const SHARED_CONSTANTS = require('../../../shared/constants');
+const SHARED_CONSTANTS = require('../../shared/constants');
 
 // promisify methods
 const _jwtSign   = Bluebird.promisify(jwt.sign);
@@ -70,8 +70,8 @@ module.exports = function (app, options) {
     })
     .catch((err) => {
       return Bluebird.reject(new errors.Unauthorized());
-    })
-
+    });
+    
   };
 
   authCtrl.verifyToken = function (token) {

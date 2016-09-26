@@ -17,6 +17,10 @@ module.exports = function (app, options) {
   ctrl.create = function (orgData) {
     return cebola.organization.create(orgData);
   };
+
+  ctrl.list = function (query) {
+    return cebola.models.Organization.find(query);
+  }
   
   ctrl.search = function (searchQuery) {
     return cebola.models.Organization.find({

@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 
 module.exports = function (app, options) {
 
-  app.post('/organization-contacts',
+  app.post('/organizations',
     app.middleware.authenticate(),
     bodyParser.json(),
     function (req, res, next) {
@@ -13,18 +13,18 @@ module.exports = function (app, options) {
         name: req.tokenData.name,
       };
 
-      app.controllers.organizationContact.create(authorData, req.body)
-        .then((organizationContact) => {
+      app.controllers.organization.create(req.body)
+        .then((organization) => {
           res.json({
-            _id: organizationContact._id,
-            name: organizationContact.name,
+            _id: organization._id,
+            name: organization.name,
           });
         })
         .catch(next);
     }
   );
 
-  app.get('/organization-contacts',
+  app.get('/organizations',
     app.middleware.authenticate(),
     function (req, res, next) {
 
@@ -33,13 +33,13 @@ module.exports = function (app, options) {
       var promise;
 
       if (searchQuery) {
-        promise = app.controllers.organizationContact.search(searchQuery);
+        promise = app.controllers.organization.search(searchQuery);
       } else {
-        promise = app.controllers.organizationContact.list()
+        promise = app.controllers.organization.list()
       }
       
-      promise.then((organizationContacts) => {
-        res.json(organizationContacts);
+      promise.then((organizations) => {
+        res.json(organizations);
       })
       .catch(next);
     }
