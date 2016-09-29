@@ -12,12 +12,8 @@ module.exports = function (app, options) {
 
   var ctrl = {};
 
-  ctrl.registerEntry = function (shipment, operationData) {
-    return cebola.operation.registerEntry(shipment, operationData);
-  };
-
   ctrl.listByShipment = function (shipment) {
-    return cebola.operation.listByShipment(shipment);
+    return cebola.allocation.listByShipment(shipment);
   };
   
   return ctrl;

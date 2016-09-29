@@ -1,5 +1,6 @@
 // third-party
 const bodyParser = require('body-parser');
+const Bluebird   = require('bluebird');
 
 module.exports = function (app, options) {
 
@@ -15,8 +16,6 @@ module.exports = function (app, options) {
 
       var supplier    = req.body.supplier;
       var allocations = req.body.allocations || [];
-
-      console.log(allocations);
 
       app.controllers.shipment
         .scheduleEntry(authorData, supplier, req.body, allocations)
@@ -44,7 +43,14 @@ module.exports = function (app, options) {
     app.middleware.authenticate(),
     function (req, res, next) {
 
-      app.controllers.shipment.list()
+      // load queryable data
+      var query = {};
+
+      if (req.query.type) {
+        query.type = req.query.type;
+      }
+
+      app.controllers.shipment.list(query)
         .then((shipments) => {
           res.json(shipments);
         })
@@ -64,9 +70,11 @@ module.exports = function (app, options) {
 
           return app.controllers.shipment.getSummary(shipment);
         })
-        .then((shipmentSummary) => {
-          var shipmentData     = _shipment.toJSON();
-          shipmentData.summary = shipmentSummary;
+        .then((summary) => {
+          var shipmentData = _shipment.toJSON();
+
+          shipmentData.allocations           = summary.allocations;
+          shipmentData.unallocatedOperations = summary.unallocatedOperations;
 
           res.json(shipmentData);
         })

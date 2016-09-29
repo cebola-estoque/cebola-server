@@ -19,7 +19,7 @@ module.exports = function (app, options) {
   };
 
   ctrl.list = function (query) {
-    return cebola.models.Organization.find(query);
+    return cebola.organization.list(query);
   }
   
   ctrl.search = function (searchQuery) {

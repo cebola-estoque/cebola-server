@@ -8,7 +8,7 @@ module.exports = function (app, options) {
   const errors = app.errors;
 
   var ctrl = {};
-
+  
   /**
    * Creates a new organization
    * @param  {Object} orgData

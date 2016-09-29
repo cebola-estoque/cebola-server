@@ -37,6 +37,8 @@ function cebolaServer(options) {
     require('./controllers/user')(app, options);
   app.controllers.auth =
     require('./controllers/auth')(app, options);
+  app.controllers.allocation =
+    require('./controllers/allocation')(app, options);
   app.controllers.operation =
     require('./controllers/operation')(app, options);
   app.controllers.shipment =

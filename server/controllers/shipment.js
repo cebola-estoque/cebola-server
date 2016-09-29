@@ -37,8 +37,8 @@ module.exports = function (app, options) {
     return cebola.shipment.scheduleExit(supplier, shipmentData, allocationsData);
   };
 
-  ctrl.list = function () {
-    return cebola.shipment.list();
+  ctrl.list = function (query) {
+    return cebola.shipment.list(query);
   };
 
   ctrl.getById = function (shipmentId, options) {
