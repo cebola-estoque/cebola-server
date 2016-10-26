@@ -30,12 +30,17 @@ module.exports = function (app, options) {
 
       var searchQuery = req.query.q;
 
+      var filterQuery = {};
+      if (req.query.roles) {
+        filterQuery.roles = req.query.roles.split(',')
+      }
+
       var promise;
 
       if (searchQuery) {
-        promise = app.controllers.organization.search(searchQuery);
+        promise = app.controllers.organization.search(searchQuery, filterQuery);
       } else {
-        promise = app.controllers.organization.list()
+        promise = app.controllers.organization.list(filterQuery)
       }
       
       promise.then((organizations) => {

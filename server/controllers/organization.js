@@ -22,12 +22,15 @@ module.exports = function (app, options) {
     return cebola.organization.list(query);
   }
   
-  ctrl.search = function (searchQuery) {
-    return cebola.models.Organization.find({
-      $text: {
-        $search: searchQuery,
-      }
-    }, {
+  ctrl.search = function (searchQuery, filterQuery) {
+
+    filterQuery = filterQuery || {};
+
+    filterQuery.$text = {
+      $search: searchQuery,
+    };
+
+    return cebola.models.Organization.find(filterQuery, {
       score: { $meta: 'textScore' }
     })
     .sort({ score: { $meta : 'textScore' } })

@@ -29,10 +29,6 @@ function cebolaServer(options) {
 
   // instantiate controllers
   app.controllers = {};
-  // app.controllers.organizationContact =
-  //   require('./controllers/organization-contact')(app, options);
-  // app.controllers.productModel =
-  //   require('./controllers/product-model')(app, options);
   app.controllers.user =
     require('./controllers/user')(app, options);
   app.controllers.auth =
@@ -43,9 +39,6 @@ function cebolaServer(options) {
     require('./controllers/operation')(app, options);
   app.controllers.shipment =
     require('./controllers/shipment')(app, options);
-  // app.controllers.inventory =
-  //   require('./controllers/inventory')(app, options);
-  
   app.controllers.organization =
     require('./controllers/organization')(app, options);
   app.controllers.productModel =
