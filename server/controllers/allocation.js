@@ -2,6 +2,8 @@
 const Bluebird = require('bluebird');
 const moment   = require('moment');
 
+const aux = require('../auxiliary');
+
 // constants
 
 module.exports = function (app, options) {
@@ -12,9 +14,14 @@ module.exports = function (app, options) {
 
   var ctrl = {};
 
-  ctrl.listByShipment = function (shipment) {
-    return cebola.allocation.listByShipment(shipment);
-  };
+  aux.proxyMethods(ctrl, cebola.allocation, [
+    'listByShipment',
+    'allocateEntry',
+    'allocateExit',
+    'cancel',
+    'effectivateEntry',
+    'effectivateExit',
+  ]);
   
   return ctrl;
 

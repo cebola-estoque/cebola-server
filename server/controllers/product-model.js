@@ -1,6 +1,8 @@
 // third-party
 const Bluebird = require('bluebird');
 
+const aux = require('../auxiliary');
+
 module.exports = function (app, options) {
 
   const cebola = app.services.cebola;
@@ -9,21 +11,11 @@ module.exports = function (app, options) {
 
   var ctrl = {};
 
-  ctrl.create = function (data) {
-    return cebola.productModel.create(data);
-  };
-
-  ctrl.getById = function (id) {
-    return cebola.productModel.getById(id);
-  };
-  
-  ctrl.list = function () {
-    return cebola.productModel.list();
-  };
-  
-  ctrl.search = function (queryText) {
-    return cebola.productModel.search(queryText);
-  };
+  aux.proxyMethods(ctrl, cebola.productModel, [
+    'create',
+    'list',
+    'search',
+  ]);
   
   return ctrl;
 

@@ -1,6 +1,8 @@
 // third-party
 const Bluebird = require('bluebird');
 
+const aux = require('../auxiliary');
+
 module.exports = function (app, options) {
 
   const cebola = app.services.cebola;
@@ -9,18 +11,11 @@ module.exports = function (app, options) {
 
   var ctrl = {};
 
-  /**
-   * Creates a new organization
-   * @param  {Object} orgData
-   * @return {Bluebird -> org}
-   */
-  ctrl.create = function (orgData) {
-    return cebola.organization.create(orgData);
-  };
-
-  ctrl.list = function (query) {
-    return cebola.organization.list(query);
-  }
+  aux.proxyMethods(ctrl, cebola.organization, [
+    'create',
+    'list',
+    'delete',
+  ]);
   
   ctrl.search = function (searchQuery, filterQuery) {
 
