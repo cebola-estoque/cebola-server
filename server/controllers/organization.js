@@ -13,6 +13,7 @@ module.exports = function (app, options) {
 
   aux.proxyMethods(ctrl, cebola.organization, [
     'create',
+    'getById',
     'list',
     'delete',
   ]);

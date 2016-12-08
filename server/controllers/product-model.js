@@ -13,6 +13,8 @@ module.exports = function (app, options) {
 
   aux.proxyMethods(ctrl, cebola.productModel, [
     'create',
+    'getById',
+    // 'getBySKU',
     'list',
     'search',
   ]);

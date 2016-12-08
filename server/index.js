@@ -52,6 +52,10 @@ function cebolaServer(options) {
     require('./middleware/load-user').bind(null, app);
   app.middleware.loadShipment =
     require('./middleware/load-shipment').bind(null, app);
+  app.middleware.loadProductModel =
+    require('./middleware/load-product-model').bind(null, app);
+  app.middleware.loadOrganization =
+    require('./middleware/load-organization').bind(null, app);
 
   // CORS
   var corsWhitelist = options.corsWhitelist || [];

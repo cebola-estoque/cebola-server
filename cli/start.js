@@ -3,7 +3,7 @@ const http = require('http');
 
 // internal dependencies
 const pkg = require('../package.json');
-const createInventoryAPI = require('../server');
+const createCebolaAPI = require('../server');
 
 var options = {
   apiVersion: pkg.version,
@@ -15,12 +15,12 @@ var options = {
 };
 
 // instantiate the app
-var app = createInventoryAPI(options);
+var app = createCebolaAPI(options);
 
 // create http server and pass express app as callback
 var server = http.createServer(app);
 
 // start listening
 server.listen(options.port, function () {
-  console.log('InventoryAPI listening at port %s', options.port);
+  console.log('CebolaAPI listening at port %s', options.port);
 });
