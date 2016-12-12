@@ -30,7 +30,9 @@ module.exports = function (app, options) {
 
       var filterQuery = {};
       if (req.query.roles) {
-        filterQuery.roles = req.query.roles.split(',')
+        filterQuery.roles = {
+          $in: req.query.roles.split(',')
+        };
       }
 
       var promise;
