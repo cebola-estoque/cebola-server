@@ -39,6 +39,8 @@ function cebolaServer(options) {
     require('./controllers/operation')(app, options);
   app.controllers.shipment =
     require('./controllers/shipment')(app, options);
+  app.controllers.inventory =
+    require('./controllers/inventory')(app, options);
   app.controllers.organization =
     require('./controllers/organization')(app, options);
   app.controllers.productModel =
@@ -89,6 +91,7 @@ function cebolaServer(options) {
   require('./routes/organization')(app, options);
   require('./routes/product-model')(app, options);
   require('./routes/shipment')(app, options);
+  require('./routes/inventory')(app, options);
 
   // load error-handlers
   require('./error-handlers/inventory-api-error')(app, options);

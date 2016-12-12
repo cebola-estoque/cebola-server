@@ -5,7 +5,7 @@ const moment   = require('moment');
 const aux = require('../auxiliary');
 
 // constatns
-const SHARED_CONSTANTS = require('../../../shared/constants');
+// const SHARED_CONSTANTS = require('../../../shared/constants');
 
 module.exports = function (app, options) {
 
@@ -14,8 +14,8 @@ module.exports = function (app, options) {
   const errors = app.errors;
 
   var ctrl = {};
-
-  aux.proxyMethods(ctrl, cebola, [
+  
+  aux.proxyMethods(ctrl, cebola.inventory, [
     'summary',
     'shipmentSummary',
     'productSummary',

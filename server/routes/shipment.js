@@ -3,14 +3,22 @@ const bodyParser = require('body-parser');
 const Bluebird   = require('bluebird');
 
 module.exports = function (app, options) {
-
+  
+  // TODO: auth
   app.post('/shipments/entries',
     bodyParser.json(),
     function (req, res, next) {
 
       var supplier    = req.body.supplier;
       var allocations = req.body.allocations || [];
-
+      
+      var shipmentData = req.body;
+      delete shipmentData.supplier;
+      delete shipmentData.allocations;
+      
+      console.log('create entry shipment', supplier, shipmentData, allocations);
+      
+      
       app.controllers.shipment
         .scheduleEntry(supplier, req.body, allocations)
         .then((shipment) => {
@@ -19,7 +27,8 @@ module.exports = function (app, options) {
         .catch(next);
     }
   );
-
+  
+  // TODO: auth
   app.get('/shipments/entries',
     function (req, res, next) {
       
@@ -37,30 +46,19 @@ module.exports = function (app, options) {
     }
   );
 
-  // app.get('/shipment/:shipmentId',
-  //   app.middleware.authenticate(),
-  //   function (req, res, next) {
-
-  //     var _shipment;
-
-  //     app.controllers.shipment.getById(req.params.shipmentId)
-  //       .then((shipment) => {
-  //         _shipment = shipment;
-
-  //         return app.controllers.shipment.getSummary(shipment);
-  //       })
-  //       .then((summary) => {
-  //         var shipmentData = _shipment.toJSON();
-
-  //         shipmentData.allocations           = summary.allocations;
-  //         shipmentData.unallocatedOperations = summary.unallocatedOperations;
-
-  //         res.json(shipmentData);
-  //       })
-  //       .catch(next);
-
-  //   }
-  // );
+  // TODO: auth
+  app.get('/shipment/:shipmentId',
+    // app.middleware.authenticate(),
+    function (req, res, next) {
+      
+      app.controllers.shipment.getById(req.params.shipmentId)
+        .then((shipment) => {
+          
+          res.json(shipment);
+        })
+        .catch(next);
+    }
+  );
 
   // app.post('/shipment/:shipmentId/operations/entries',
   //   app.middleware.authenticate(),
