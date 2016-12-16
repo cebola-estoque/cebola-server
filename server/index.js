@@ -54,6 +54,10 @@ function cebolaServer(options) {
     require('./middleware/load-user').bind(null, app);
   app.middleware.loadShipment =
     require('./middleware/load-shipment').bind(null, app);
+  app.middleware.loadAllocation =
+    require('./middleware/load-allocation').bind(null, app);
+  app.middleware.loadOperation =
+    require('./middleware/load-operation').bind(null, app);
   app.middleware.loadProductModel =
     require('./middleware/load-product-model').bind(null, app);
   app.middleware.loadOrganization =
