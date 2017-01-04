@@ -1,7 +1,7 @@
 module.exports = function (app, options) {
 
   // TODO: auth
-  app.get('/inventory/available-products',
+  app.get('/inventory/summary',
     // app.middleware.authenticate(),
     function (req, res, next) {
       app.controllers.inventory
@@ -11,6 +11,23 @@ module.exports = function (app, options) {
           res.json(summary);
         })
         .catch(next);
+    }
+  );
+
+  // TODO: auth
+  app.get('/inventory/availability-summary',
+    function (req, res, next) {
+
+      var date = req.query.date ? new Date(req.query.date) : new Date();
+
+      app.controllers.inventory
+        .availabilitySummary(date, null, null, null, { keepRecords: false })
+        .then((summary) => {
+          console.log('available-products', summary);
+          res.json(summary);
+        })
+        .catch(next);
+
     }
   );
 
