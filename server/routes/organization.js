@@ -10,7 +10,7 @@ module.exports = function (app, options) {
   app.post('/organizations',
     bodyParser.json(),
     function (req, res, next) {
-      
+
       app.controllers.organization.create(req.body)
         .then((organization) => {
           res.json(organization);

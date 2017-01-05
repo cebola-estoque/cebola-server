@@ -19,7 +19,7 @@ module.exports = function (app, options) {
       delete shipmentData.allocations;
       
       app.controllers.shipment
-        .scheduleEntry(supplier, req.body, allocations)
+        .scheduleEntry(supplier, shipmentData, allocations)
         .then((shipment) => {
           res.json(shipment);
         })
@@ -33,6 +33,46 @@ module.exports = function (app, options) {
       
       var query = {
         type: 'entry'
+      };
+      
+      app.controllers.shipment
+        .list(query)
+        .then((shipments) => {
+          res.json(shipments);
+        })
+        .catch(next);
+    }
+  );
+
+  // TODO: auth
+  app.post('/shipments/exits',
+    bodyParser.json(),
+    function (req, res, next) {
+
+      var recipient   = req.body.recipient;
+      var allocations = req.body.allocations || [];
+      
+      var shipmentData = req.body;
+      delete shipmentData.recipient;
+      delete shipmentData.allocations;
+
+      console.log('exit shipment allocations', allocations);
+      
+      app.controllers.shipment
+        .scheduleExit(recipient, shipmentData, allocations)
+        .then((shipment) => {
+          res.json(shipment);
+        })
+        .catch(next);
+    }
+  );
+
+  // TODO: auth
+  app.get('/shipments/exits',
+    function (req, res, next) {
+      
+      var query = {
+        type: 'exit'
       };
       
       app.controllers.shipment
