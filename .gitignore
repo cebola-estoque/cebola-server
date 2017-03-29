@@ -1,5 +1,6 @@
 coverage
 node_modules
+mongodump
 
 .DS_Store
 *.log
