@@ -223,9 +223,9 @@ module.exports = function (app, options) {
     function (req, res, next) {
       
       var shipment = req.shipment;
-      var observations = req.body.observations;
+      var annotations = req.body.annotations;
       
-      return app.controllers.shipment.finish(shipment, observations)
+      return app.controllers.shipment.finish(shipment, annotations)
         .then((shipment) => {
           res.json(shipment);
         })

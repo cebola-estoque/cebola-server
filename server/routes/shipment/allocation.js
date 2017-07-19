@@ -174,7 +174,7 @@ module.exports = function (app, options) {
           quantity
         );
       } else {
-        effectivatePromise = new app.errors.InvalidOption('invalid allocation type');
+        effectivatePromise = Bluebird.reject(new app.errors.InvalidOption('invalid allocation type'));
       }
       
       return effectivatePromise.then((operation) => {
