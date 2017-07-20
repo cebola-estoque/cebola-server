@@ -88,20 +88,20 @@ module.exports = function (app, options) {
     }
   );
   
-  // TODO: auth
-  app.post('/shipment/:shipmentId/cancel',
-    app.middleware.loadShipment(),
-    function (req, res, next) {
+  // // TODO: auth
+  // app.post('/shipment/:shipmentId/cancel',
+  //   app.middleware.loadShipment(),
+  //   function (req, res, next) {
       
-    }
-  );
+  //   }
+  // );
   
-  app.post('/shipment/:shipmentId/allocate',
-    app.middleware.loadShipment(),
-    function (req, res, next) {
+  // app.post('/shipment/:shipmentId/allocate',
+  //   app.middleware.loadShipment(),
+  //   function (req, res, next) {
       
-    }
-  );
+  //   }
+  // );
 
   // app.post('/shipment/:shipmentId/operations/entries',
   //   app.middleware.authenticate(),

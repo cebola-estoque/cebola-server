@@ -128,10 +128,12 @@ module.exports = function (app, options) {
               allocation.operations = {
                 active: operations.filter((op) => {
                   return op.status.value === 'operation-active' &&
+                         op.sourceAllocation &&
                          op.sourceAllocation._id.toString() === allocation._id.toString();
                 }),
                 cancelled: operations.filter((op) => {
                   return op.status.value === 'operation-cancelled' &&
+                         op.sourceAllocation &&
                          op.sourceAllocation._id.toString() === allocation._id.toString();
                 }),
               }
@@ -152,8 +154,14 @@ module.exports = function (app, options) {
             
             // standalone operations
             shipmentData.standaloneOperations = {
-              active: [],
-              cancelled: [],
+              active: operations.filter((op) => {
+                return op.status.value === 'operation-active' &&
+                       (!op.sourceAllocation || !op.sourceAllocation._id);
+              }),
+              cancelled: operations.filter((op) => {
+                return op.status.value === 'operation-cancelled' &&
+                       (!op.sourceAllocation || !op.sourceAllocation._id);
+              })
             };
             
             res.json(shipmentData);
@@ -206,6 +214,8 @@ module.exports = function (app, options) {
     function (req, res, next) {
       
       var shipment = req.shipment;
+
+      console.log(shipment);
       
       return app.controllers.shipment.cancel(shipment)
         .then((shipment) => {

@@ -10,8 +10,42 @@ module.exports = function (app, options) {
    */
   app.post('/shipment/:shipmentId/operations',
     app.middleware.loadShipment(),
+    bodyParser.json(),
     function (req, res, next) {
       
+      var shipment = req.shipment;
+      var operationsToCreate = req.body;
+
+      console.log
+      
+      if (!operationsToCreate || !Array.isArray(operationsToCreate)) {
+        next(new app.errors.InvalidOption('operationsToCreate', 'required'));
+        return;
+      }
+      
+      return Bluebird.all(operationsToCreate.map((toCreate) => {
+        
+        // TODO: create allocate method on operation controller
+        // that will choose the correct operation type
+        if (shipment.type === 'entry') {
+          return app.controllers.operation.registerEntry(
+            shipment,
+            toCreate.product,
+            toCreate.quantity
+          );
+        } else if (shipment.type === 'exit') {
+          return app.controllers.operation.registerExit(
+            shipment,
+            toCreate.product,
+            toCreate.quantity
+          );
+        }
+        
+      }))
+      .then((operations) => {
+        res.json(operations);
+      })
+      .catch(next);
     }
   );
   

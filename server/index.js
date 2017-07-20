@@ -90,12 +90,13 @@ function cebolaServer(options) {
   });
 
   // load routes
-  require('./routes/user')(app, options);
-  require('./routes/auth')(app, options);
+  // require('./routes/user')(app, options);
+  // require('./routes/auth')(app, options);
   require('./routes/organization')(app, options);
   require('./routes/product-model')(app, options);
   require('./routes/shipment')(app, options);
   require('./routes/inventory')(app, options);
+  require('./routes/operation')(app, options);
 
   // load error-handlers
   require('./error-handlers/inventory-api-error')(app, options);
