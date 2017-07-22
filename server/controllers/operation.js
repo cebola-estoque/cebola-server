@@ -15,6 +15,8 @@ module.exports = function (app, options) {
   var ctrl = {};
 
   aux.proxyMethods(ctrl, cebola.operation, [
+    'list',
+    'listByProduct',
     'listByShipment',
     'registerEntry',
     'registerExit',

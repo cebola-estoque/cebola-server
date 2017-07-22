@@ -32,4 +32,17 @@ module.exports = function (app, options) {
     }
   );
 
+  app.get('/operations',
+    function (req, res, next) {
+
+      var query = req.query;
+
+      app.controllers.operation.list(query)
+        .then((operations) => {
+          res.json(operations);
+        })
+        .catch(next);
+    }
+  );
+
 };
