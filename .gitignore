@@ -4,3 +4,4 @@ mongodump
 
 .DS_Store
 *.log
+tmp-uploads

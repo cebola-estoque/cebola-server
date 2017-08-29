@@ -21,6 +21,7 @@ gulp.task('nodemon', function () {
       MONGODB_URI: DEV_DB_URI,
       SECRET: 'TEST_SECRET',
       CORS_WHITELIST: 'http://localhost:3000',
+      HOST: 'http://localhost:4000',
     },
     ext: 'js',
     ignore: [

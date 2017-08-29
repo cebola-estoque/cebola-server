@@ -55,6 +55,9 @@ module.exports = function (app, options) {
       var productModelData = req.body;
       
       productModel.set(productModelData);
+
+      console.log(productModelData);
+      console.log(productModel.get('image'));
       
       return productModel.save().then((productModel) => {
         res.json(productModel);

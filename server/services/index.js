@@ -5,4 +5,5 @@ module.exports = function (app, options) {
   // setup mongoose before cebola
   require('./mongoose')(app, options);
   require('./cebola')(app, options);
+  require('./upload')(app, options);
 };

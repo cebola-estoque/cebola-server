@@ -12,6 +12,10 @@ const moment = require('moment');
 exports.proxyMethods = function (proxy, proxied, methods) {
 
   methods.forEach((methodName) => {
+    if (typeof proxied[methodName] !== 'function') {
+      throw new TypeError(`${methodName} is not a function`);
+    }
+    
     proxy[methodName] = proxied[methodName].bind(proxied);
   });
 

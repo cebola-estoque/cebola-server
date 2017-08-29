@@ -2,10 +2,11 @@ module.exports = function (app, options) {
 
   // TODO: auth
   app.get('/inventory/summary',
-    // app.middleware.authenticate(),
     function (req, res, next) {
+      var query = req.query || {};
+
       app.controllers.inventory
-        .summary(null, null, null, { keepRecords: true })
+        .summary(query, null, null, { keepRecords: true })
         .then((summary) => {
           console.log('summary', summary);
           res.json(summary);
@@ -30,21 +31,6 @@ module.exports = function (app, options) {
 
     }
   );
-
-  // app.get('/inventory/search',
-  //   app.middleware.authenticate(),
-  //   function (req, res, next) {
-
-  //     var query = req.query.q;
-
-  //     app.controllers.inventory
-  //       .search(query)
-  //       .then((summary) => {
-  //         res.json(summary);
-  //       })
-  //       .catch(next);
-  //   }
-  // );
   
   // TODO: auth
   app.get('/inventory/shipment/:shipmentId',

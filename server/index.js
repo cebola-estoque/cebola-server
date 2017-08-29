@@ -15,6 +15,16 @@ function cebolaServer(options) {
     throw new Error('secret is required');
   }
 
+  if (!options.host) {
+    throw new Error('host is required');
+  }
+
+  options.host = options.host.replace(/\/$/, '');
+
+  if (!/^https?\:\/\//.test(options.host)) {
+    options.host = 'http://' + options.host;
+  }
+
   // create express app instance
   var app = express();
 
@@ -97,6 +107,8 @@ function cebolaServer(options) {
   require('./routes/shipment')(app, options);
   require('./routes/inventory')(app, options);
   require('./routes/operation')(app, options);
+
+  require('./routes/file')(app, options);
 
   // load error-handlers
   require('./error-handlers/inventory-api-error')(app, options);

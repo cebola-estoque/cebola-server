@@ -11,6 +11,7 @@ var options = {
   corsWhitelist: process.env.CORS_WHITELIST,
 
   mongodbURI: process.env.MONGODB_URI,
+  host: process.env.HOST,
   secret: process.env.SECRET,
 };
 
