@@ -179,8 +179,7 @@ module.exports = function (app, options) {
   // TODO: move logic into cebola core
   /**
    * Updates a shipment
-   * If the body has a `allocations` field,
-   * will update allocations related to the shipment accordingly
+   * 'Allocations' are ignored.
    */
   app.put('/shipment/:shipmentId',
     bodyParser.json(),
@@ -190,6 +189,8 @@ module.exports = function (app, options) {
       var shipment = req.shipment;
       
       var updatedShipmentData = req.body;
+
+      delete updatedShipmentData.allocations;
       
       return Bluebird.try(() => {
         // update the shipment's data
