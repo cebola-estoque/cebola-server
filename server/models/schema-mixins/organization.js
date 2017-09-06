@@ -3,9 +3,7 @@ module.exports = function (app, options) {
   return function (organizationSchema) {
 
     organizationSchema.add({
-      CDE: {
-        type: String,
-      }
+      legalName: String, // Razão social
     });
     
     organizationSchema.index({

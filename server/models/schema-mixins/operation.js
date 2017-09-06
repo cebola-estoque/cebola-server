@@ -7,6 +7,10 @@ module.exports = function (app, options) {
         url: String,
         size: Number,
         mimetype: String,
+      },
+
+      annotations: {
+        type: String,
       }
     });
   };

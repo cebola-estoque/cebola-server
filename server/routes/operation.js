@@ -7,10 +7,15 @@ module.exports = function (app, options) {
     bodyParser.json(),
     function (req, res, next) {
 
-      var product = req.body.product;
-      var quantity = req.body.quantity;
+      var operationData = req.body;
 
-      app.controllers.operation.registerLoss(product, quantity)
+      var product = operationData.product;
+      var quantity = operationData.quantity;
+
+      delete operationData.product;
+      delete operationData.quantity;
+
+      app.controllers.operation.registerLoss(product, quantity, operationData)
         .then((lossOperation) => {
           res.json(lossOperation);
         })
@@ -21,10 +26,16 @@ module.exports = function (app, options) {
   app.post('/operations/correction',
     bodyParser.json(),
     function (req, res, next) {
-      var product = req.body.product;
-      var quantity = req.body.quantity;
 
-      app.controllers.operation.registerCorrection(product, quantity)
+      var operationData = req.body;
+
+      var product = operationData.product;
+      var quantity = operationData.quantity;
+
+      delete operationData.product;
+      delete operationData.quantity;
+
+      app.controllers.operation.registerCorrection(product, quantity, operationData)
         .then((correctionOperation) => {
           res.json(correctionOperation);
         })

@@ -1,12 +1,42 @@
 module.exports = function (app, options) {
 
+
+  const STOCK_NOT_NULL = {
+    inStock: {
+      $ne: 0,
+    }
+  };
+
+  const ALLOCATED_FOR_EXIT_NOT_NULL = {
+    allocatedForExit: {
+      $ne: 0,
+    }
+  };
+
+  const ALLOCATED_FOR_ENTRY_NOT_NULL = {
+    allocatedForEntry: {
+      $ne: 0
+    }
+  };
+
+  /**
+   * Filters out irrelevant summaries
+   * @type {Object}
+   */
+  const DEFAULT_SUMMARY_FILTER = {
+    $or: [
+      STOCK_NOT_NULL,
+      ALLOCATED_FOR_EXIT_NOT_NULL,
+      ALLOCATED_FOR_ENTRY_NOT_NULL
+    ],
+  };
+
   // TODO: auth
   app.get('/inventory/summary',
     function (req, res, next) {
       var query = req.query || {};
-
       app.controllers.inventory
-        .summary(query, null, null, { keepRecords: true })
+        .summary(query, DEFAULT_SUMMARY_FILTER, null, { keepRecords: true })
         .then((summary) => {
           console.log('summary', summary);
           res.json(summary);
@@ -22,7 +52,7 @@ module.exports = function (app, options) {
       var date = req.query.date ? new Date(req.query.date) : new Date();
 
       app.controllers.inventory
-        .availabilitySummary(date, null, null, null, { keepRecords: false })
+        .availabilitySummary(date, null, DEFAULT_SUMMARY_FILTER, null, { keepRecords: false })
         .then((summary) => {
           console.log('available-products', summary);
           res.json(summary);

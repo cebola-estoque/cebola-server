@@ -7,7 +7,14 @@ module.exports = function (app, options) {
         url: String,
         size: Number,
         mimetype: String,
-      }
+      },
+      // 'product.unitPrice': {
+      //   value: Number,
+      //   currency: {
+      //     type: String,
+      //     default: 'BRL',
+      //   },
+      // },
     });
   };
 };

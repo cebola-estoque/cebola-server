@@ -185,14 +185,29 @@ module.exports = function (app, options) {
     bodyParser.json(),
     app.middleware.loadShipment(),
     function (req, res, next) {
-      
       var shipment = req.shipment;
       
       var updatedShipmentData = req.body;
-
       delete updatedShipmentData.allocations;
+
+      var updateAllocationsPromise;
+
+      // TODO: internalize behaviour into engine
+      var updatedScheduledFor = updatedShipmentData.scheduledFor;
+
+      if (updatedScheduledFor) {
+        updateAllocationsPromise = app.controllers.allocation.listByShipment(shipment).then((allocations) => {
+          return Bluebird.all((allocations.map((allocation) => {
+            allocation.set('scheduledFor', updatedScheduledFor);
+
+            return allocation.save();
+          })));
+        });
+      } else {
+        updateAllocationsPromise = Bluebird.resolve();
+      }
       
-      return Bluebird.try(() => {
+      return updateAllocationsPromise.then(() => {
         // update the shipment's data
         shipment.set(updatedShipmentData);
         
