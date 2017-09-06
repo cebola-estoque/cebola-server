@@ -31,5 +31,8 @@
     "gulp-nodemon": "^2.1.0",
     "server-destroy": "^1.0.1",
     "should": "^11.1.0"
+  },
+  "engines": {
+    "node" : "6.9.4"
   }
 }
