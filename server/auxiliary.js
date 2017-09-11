@@ -10,7 +10,6 @@ const moment = require('moment');
  * @param  {Array} methods
  */
 exports.proxyMethods = function (proxy, proxied, methods) {
-
   methods.forEach((methodName) => {
     if (typeof proxied[methodName] !== 'function') {
       throw new TypeError(`${methodName} is not a function`);
@@ -18,13 +17,4 @@ exports.proxyMethods = function (proxy, proxied, methods) {
     
     proxy[methodName] = proxied[methodName].bind(proxied);
   });
-
-};
-
-exports.isSameProduct = function (productA, productB) {
-  var isSameModel = productA.model._id.toString() === productB.model._id.toString();
-  var isSameExpiry = moment(productA.expiry).isSame(productB.expiry);
-  var isSameMeasureUnit = productA.measureUnit === productB.measureUnit;
-  
-  return isSameModel && isSameExpiry && isSameMeasureUnit;
 };

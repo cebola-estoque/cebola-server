@@ -29,15 +29,15 @@ module.exports = function (app, options) {
         // that will choose the correct operation type
         if (shipment.type === 'entry') {
           return app.controllers.operation.registerEntry(
-            shipment,
             toCreate.product,
-            toCreate.quantity
+            toCreate.quantity,
+            shipment
           );
         } else if (shipment.type === 'exit') {
           return app.controllers.operation.registerExit(
-            shipment,
             toCreate.product,
-            toCreate.quantity
+            toCreate.quantity,
+            shipment
           );
         }
         

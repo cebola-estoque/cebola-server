@@ -27,15 +27,15 @@ module.exports = function (app, options) {
         // that will choose the correct allocation type
         if (shipment.type === 'entry') {
           return app.controllers.allocation.allocateEntry(
-            shipment,
             toCreate.product,
-            toCreate.allocatedQuantity
+            toCreate.allocatedQuantity,
+            shipment
           );
         } else if (shipment.type === 'exit') {
           return app.controllers.allocation.allocateExit(
-            shipment,
             toCreate.product,
-            toCreate.allocatedQuantity
+            toCreate.allocatedQuantity,
+            shipment
           );
         }
         

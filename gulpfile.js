@@ -8,7 +8,7 @@ const istanbul    = require('gulp-istanbul');
 const mocha       = require('gulp-mocha');
 
 // constants
-const DEV_DB_URI = 'mongodb://localhost:27017/cebola-server-dev-db';
+const DEV_DB_URI = 'mongodb://localhost:27017/cebola-server-dev-db-product-model';
 
 /**
  * Run server and restart it everytime server file changes
