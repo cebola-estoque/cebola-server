@@ -13,7 +13,7 @@
     "bcrypt": "^0.8.7",
     "bluebird": "^3.4.1",
     "body-parser": "^1.15.2",
-    "cebola": "^0.3.2",
+    "cebola": "^0.4.2",
     "cors": "^2.7.1",
     "express": "^4.14.0",
     "jsonwebtoken": "^7.1.9",

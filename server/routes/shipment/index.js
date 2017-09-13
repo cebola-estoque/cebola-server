@@ -101,72 +101,74 @@ module.exports = function (app, options) {
       
       if (withRecords) {
         
-        app.services.cebola.record.listByShipment(shipment)
-          .then((records) => {
-            var shipmentData = shipment.toJSON();
-            
-            // filter out allocations
-            // and transform them into json objects
-            // so that we may manipulate properties directly (w/out mongoose)
-            var allocations = records.filter((record) => {
-              return record.kind === 'ProductAllocation';
-            })
-            .map((allocationModel) => {
-              return allocationModel.toJSON();
-            });
-            
-            // filter out operations
-            var operations = records.filter((record) => {
-              return record.kind === 'ProductOperation';
-            })
-            .map((operationModel) => {
-              return operationModel.toJSON();
-            });
-            
-            // separate operations into allocations
-            allocations.forEach((allocation) => {
-              allocation.operations = {
-                active: operations.filter((op) => {
-                  return op.status.value === 'operation-active' &&
-                         op.sourceAllocation &&
-                         op.sourceAllocation._id.toString() === allocation._id.toString();
-                }),
-                cancelled: operations.filter((op) => {
-                  return op.status.value === 'operation-cancelled' &&
-                         op.sourceAllocation &&
-                         op.sourceAllocation._id.toString() === allocation._id.toString();
-                }),
-              }
-            });
-            
-            // allocations
-            shipmentData.allocations = {
-              active: allocations.filter((a) => {
-                return a.status.value === 'allocation-active';
-              }),
-              cancelled: allocations.filter((a) => {
-                return a.status.value === 'allocation-cancelled';
-              }),
-              finished: allocations.filter((a) => {
-                return a.status.value === 'allocation-finished';
-              }),
-            };
-            
-            // standalone operations
-            shipmentData.standaloneOperations = {
+        app.services.cebola.record.listByShipment(shipment, {
+          loadFullProductSourceShipment: true
+        })
+        .then((records) => {
+          var shipmentData = shipment.toJSON();
+          
+          // filter out allocations
+          // and transform them into json objects
+          // so that we may manipulate properties directly (w/out mongoose)
+          var allocations = records.filter((record) => {
+            return record.kind === 'ProductAllocation';
+          })
+          .map((allocationModel) => {
+            return allocationModel;
+          });
+          
+          // filter out operations
+          var operations = records.filter((record) => {
+            return record.kind === 'ProductOperation';
+          })
+          .map((operationModel) => {
+            return operationModel;
+          });
+          
+          // separate operations into allocations
+          allocations.forEach((allocation) => {
+            allocation.operations = {
               active: operations.filter((op) => {
                 return op.status.value === 'operation-active' &&
-                       (!op.sourceAllocation || !op.sourceAllocation._id);
+                       op.sourceAllocation &&
+                       op.sourceAllocation._id.toString() === allocation._id.toString();
               }),
               cancelled: operations.filter((op) => {
                 return op.status.value === 'operation-cancelled' &&
-                       (!op.sourceAllocation || !op.sourceAllocation._id);
-              })
-            };
-            
-            res.json(shipmentData);
-          })
-          .catch(next);
+                       op.sourceAllocation &&
+                       op.sourceAllocation._id.toString() === allocation._id.toString();
+              }),
+            }
+          });
+          
+          // allocations
+          shipmentData.allocations = {
+            active: allocations.filter((a) => {
+              return a.status.value === 'allocation-active';
+            }),
+            cancelled: allocations.filter((a) => {
+              return a.status.value === 'allocation-cancelled';
+            }),
+            finished: allocations.filter((a) => {
+              return a.status.value === 'allocation-finished';
+            }),
+          };
+          
+          // standalone operations
+          shipmentData.standaloneOperations = {
+            active: operations.filter((op) => {
+              return op.status.value === 'operation-active' &&
+                     (!op.sourceAllocation || !op.sourceAllocation._id);
+            }),
+            cancelled: operations.filter((op) => {
+              return op.status.value === 'operation-cancelled' &&
+                     (!op.sourceAllocation || !op.sourceAllocation._id);
+            })
+          };
+          
+          res.json(shipmentData);
+        })
+        .catch(next);
           
       } else {
         res.json(shipment);

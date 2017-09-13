@@ -35,8 +35,13 @@ module.exports = function (app, options) {
   app.get('/inventory/summary',
     function (req, res, next) {
       var query = req.query || {};
+
       app.controllers.inventory
-        .summary(query, DEFAULT_SUMMARY_FILTER, null, { keepRecords: true })
+        .summary(query, DEFAULT_SUMMARY_FILTER, null, {
+          keepRecords: true,
+          loadFullProductModel: true,
+          loadFullProductSourceShipment: true,
+        })
         .then((summary) => {
           console.log('summary', summary);
           res.json(summary);
@@ -52,7 +57,11 @@ module.exports = function (app, options) {
       var date = req.query.date ? new Date(req.query.date) : new Date();
 
       app.controllers.inventory
-        .availabilitySummary(date, null, DEFAULT_SUMMARY_FILTER, null, { keepRecords: false })
+        .availabilitySummary(date, null, DEFAULT_SUMMARY_FILTER, null, {
+          keepRecords: false,
+          loadFullProductModel: true,
+          loadFullProductSourceShipment: true,
+        })
         .then((summary) => {
           console.log('available-products', summary);
           res.json(summary);
