@@ -11,11 +11,18 @@ module.exports = function (app, options) {
     app.services.upload.single('file'),
     function (req, res, next) {
 
+      // res.json({
+      //   filename: req.file.filename,
+      //   mimetype: req.file.mimetype,
+      //   size: req.file.size,
+      //   url: options.host + '/files/' + req.file.filename,
+      // });
+
       res.json({
         filename: req.file.filename,
         mimetype: req.file.mimetype,
         size: req.file.size,
-        url: options.host + '/files/' + req.file.filename,
+        url: req.file.location,
       });
     }
   );
@@ -23,5 +30,5 @@ module.exports = function (app, options) {
   /**
    * Serve uploaded files
    */
-  app.use('/files', express.static(path.join(__dirname, '../../tmp-uploads')));
+  // app.use('/files', express.static(path.join(__dirname, '../../tmp-uploads')));
 };

@@ -22,6 +22,7 @@ gulp.task('nodemon', function () {
       SECRET: 'TEST_SECRET',
       CORS_WHITELIST: 'http://localhost:3000',
       HOST: 'http://localhost:4000',
+      AWS_S3_BUCKET: 'cebola-dev',
     },
     ext: 'js',
     ignore: [

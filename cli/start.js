@@ -13,6 +13,8 @@ var options = {
   mongodbURI: process.env.MONGODB_URI,
   host: process.env.HOST,
   secret: process.env.SECRET,
+
+  awsS3Bucket: process.env.AWS_S3_BUCKET,
 };
 
 // instantiate the app
