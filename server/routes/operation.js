@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 module.exports = function (app, options) {
 
   app.post('/operations/loss',
+    app.middleware.authorize(),
     bodyParser.json(),
     function (req, res, next) {
 
@@ -24,6 +25,7 @@ module.exports = function (app, options) {
   );
 
   app.post('/operations/correction',
+    app.middleware.authorize(),
     bodyParser.json(),
     function (req, res, next) {
 
@@ -44,6 +46,7 @@ module.exports = function (app, options) {
   );
 
   app.get('/operations',
+    app.middleware.authorize(),
     function (req, res, next) {
 
       var query = req.query;

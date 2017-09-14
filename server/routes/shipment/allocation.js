@@ -4,11 +4,11 @@ const Bluebird   = require('bluebird');
 
 module.exports = function (app, options) {
   
-  // TODO: auth
   /**
    * Batch creates allocations for the given shipment
    */
   app.post('/shipment/:shipmentId/allocations',
+    app.middleware.authorize(),
     app.middleware.loadShipment(),
     bodyParser.json(),
     function (req, res, next) {
@@ -48,17 +48,11 @@ module.exports = function (app, options) {
     }
   );
   
-  app.get('/shipment/:shipmentId/allocations',
-    function (req, res, next) {
-      
-    }
-  );
-  
-  // TODO: auth
   /**
    * Batch updates allocations
    */
   app.put('/shipment/:shipmentId/allocations',
+    app.middleware.authorize(),
     app.middleware.loadShipment(),
     bodyParser.json(),
     function (req, res, next) {
@@ -102,12 +96,12 @@ module.exports = function (app, options) {
       
     }
   );
-  
-  // TODO: auth
+
   /**
    * Batch cancels allocations related to the shipment
    */
   app.delete('/shipment/:shipmentId/allocations',
+    app.middleware.authorize(),
     app.middleware.loadShipment(),
     bodyParser.json(),
     function (req, res, next) {
@@ -150,6 +144,7 @@ module.exports = function (app, options) {
    * Effectivates an allocation
    */
   app.post('/shipment/:shipmentId/allocation/:allocationId/effectivate',
+    app.middleware.authorize(),
     app.middleware.loadShipment(),
     app.middleware.loadAllocation(),
     bodyParser.json(),

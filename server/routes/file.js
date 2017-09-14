@@ -8,6 +8,7 @@ const express    = require('express');
 module.exports = function (app, options) {
 
   app.post('/files',
+    app.middleware.authorize(),
     app.services.upload.single('file'),
     function (req, res, next) {
 

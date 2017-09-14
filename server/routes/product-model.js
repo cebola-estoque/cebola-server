@@ -5,9 +5,9 @@ module.exports = function (app, options) {
   
   /**
    * Creates a product model
-   * TODO: auth
    */
   app.post('/product-models',
+    app.middleware.authorize(),
     bodyParser.json(),
     function (req, res, next) {
 
@@ -21,9 +21,9 @@ module.exports = function (app, options) {
 
   /**
    * Retrieves a list of product models
-   * TODO: auth
    */
   app.get('/product-models',
+    app.middleware.authorize(),
     function (req, res, next) {
 
       var searchQuery = req.query.q;
@@ -44,10 +44,8 @@ module.exports = function (app, options) {
     }
   );
   
-  /**
-   * TODO: auth
-   */
   app.put('/product-model/:productModelId',
+    app.middleware.authorize(),
     app.middleware.loadProductModel({}),
     bodyParser.json(),
     function (req, res, next) {
@@ -68,9 +66,9 @@ module.exports = function (app, options) {
   
   /**
    * Deletes a product model.
-   * TODO: auth
    */
   app.delete('/product-model/:productModelId',
+    app.middleware.authorize(),
     app.middleware.loadProductModel({}),
     bodyParser.json(),
     function (req, res, next) {

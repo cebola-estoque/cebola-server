@@ -5,9 +5,9 @@ module.exports = function (app, options) {
 
   /**
    * Creates an organization
-   * TODO: auth
    */
   app.post('/organizations',
+    app.middleware.authorize(),
     bodyParser.json(),
     function (req, res, next) {
 
@@ -21,9 +21,9 @@ module.exports = function (app, options) {
 
   /**
    * Retrieves a list of organizations
-   * TODO: auth
    */
   app.get('/organizations',
+    app.middleware.authorize(),
     function (req, res, next) {
 
       var searchQuery = req.query.q;
@@ -52,9 +52,9 @@ module.exports = function (app, options) {
   
   /**
    * Updates an organization
-   * TODO: auth
    */
   app.put('/organization/:organizationId',
+    app.middleware.authorize(),
     app.middleware.loadOrganization({}),
     bodyParser.json(),
     function (req, res, next) {
@@ -70,6 +70,7 @@ module.exports = function (app, options) {
   );
   
   app.delete('/organization/:organizationId',
+    app.middleware.authorize(),
     app.middleware.loadOrganization({}),
     function (req, res, next) {
       var organization = req.organization;

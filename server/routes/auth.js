@@ -5,12 +5,10 @@ module.exports = function (app, options) {
 
   const authCtrl = app.controllers.auth;
 
-  app.post('/auth/token/generate',
+  app.post('/temporary-token/generate',
     bodyParser.json(),
     function (req, res, next) {
-
-      authCtrl.generateToken(
-        req.body.email,
+      authCtrl.generateTemporaryToken(
         req.body.password
       )
       .then((token) => {
@@ -19,13 +17,6 @@ module.exports = function (app, options) {
         });
       })
       .catch(next);
-    }
-  );
-
-  app.post('/auth/token/verify',
-    app.middleware.authenticate(),
-    function (req, res, next) {
-      res.json(req.tokenData);
     }
   );
 };

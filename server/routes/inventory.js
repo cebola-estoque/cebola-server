@@ -30,9 +30,9 @@ module.exports = function (app, options) {
       ALLOCATED_FOR_ENTRY_NOT_NULL
     ],
   };
-
-  // TODO: auth
+  
   app.get('/inventory/summary',
+    app.middleware.authorize(),
     function (req, res, next) {
       var query = req.query || {};
 
@@ -49,9 +49,9 @@ module.exports = function (app, options) {
         .catch(next);
     }
   );
-
-  // TODO: auth
+  
   app.get('/inventory/availability-summary',
+    app.middleware.authorize(),
     function (req, res, next) {
 
       var date = req.query.date ? new Date(req.query.date) : new Date();
@@ -71,8 +71,8 @@ module.exports = function (app, options) {
     }
   );
   
-  // TODO: auth
   app.get('/inventory/shipment/:shipmentId',
+    app.middleware.authorize(),
     function (req, res, next) {
       
       app.controllers.inventory.shipmentSummary(

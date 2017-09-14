@@ -20,9 +20,11 @@ gulp.task('nodemon', function () {
       PORT: '4000',
       MONGODB_URI: DEV_DB_URI,
       SECRET: 'TEST_SECRET',
-      CORS_WHITELIST: 'http://localhost:3000',
+      CORS_ALLOWED_ORIGINS: 'http://localhost:3000',
       HOST: 'http://localhost:4000',
       AWS_S3_BUCKET: 'cebola-dev',
+      TEMPORARY_PASSWORD: 'senhateste',
+      TEMPORARY_SECRET: 'TEST_TEMPORARY_SECRET',
     },
     ext: 'js',
     ignore: [

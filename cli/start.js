@@ -8,11 +8,13 @@ const createCebolaAPI = require('../server');
 var options = {
   apiVersion: pkg.version,
   port: process.env.PORT,
-  corsWhitelist: process.env.CORS_WHITELIST,
+  corsAllowedOrigins: process.env.CORS_ALLOWED_ORIGINS,
 
   mongodbURI: process.env.MONGODB_URI,
   host: process.env.HOST,
   secret: process.env.SECRET,
+  temporaryPassword: process.env.TEMPORARY_PASSWORD,
+  temporarySecret: process.env.TEMPORARY_SECRET,
 
   awsS3Bucket: process.env.AWS_S3_BUCKET,
 };

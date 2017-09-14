@@ -6,6 +6,7 @@ module.exports = function (app, options) {
   const userCtrl = app.controllers.user;
 
   app.post('/users',
+    app.middleware.authorize(),
     bodyParser.json(),
     function (req, res, next) {
 
@@ -25,7 +26,7 @@ module.exports = function (app, options) {
   );
 
   app.get('/user/:userId',
-    app.middleware.authenticate(),
+    app.middleware.authorize(),
     app.middleware.loadUser(),
     function (req, res, next) {
 

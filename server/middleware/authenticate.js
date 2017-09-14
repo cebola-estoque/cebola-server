@@ -1,6 +1,14 @@
-const Bluebird = require('bluebird');
+// third-party
+const Bluebird   = require('bluebird');
+const expressJwt = require('express-jwt');
 
 module.exports = function (app, options) {
+
+  /**
+   * Secrets are loaded from app options
+   */
+  const SECRET = app.APP_OPTIONS.secret;
+  const TEMPORARY_SECRET = app.APP_OPTIONS.temporarySecret;
 
   options = options || {};
 
@@ -22,46 +30,50 @@ module.exports = function (app, options) {
     } 
   }
 
-  return function (req, res, next) {
-    var token = parseToken(req);
+  return expressJwt({
+    secret: TEMPORARY_SECRET
+  });
 
-    if (!token) {
-      next(new app.errors.Unauthorized());
-      return;
-    }
+  // return function (req, res, next) {
+  //   var token = parseToken(req);
 
-    app.controllers.auth.verifyToken(token)
-      .then(function (decoded) {
+  //   if (!token) {
+  //     next(new app.errors.Unauthorized());
+  //     return;
+  //   }
+
+  //   app.controllers.auth.verifyToken(token)
+  //     .then(function (decoded) {
         
-        // make the user data available to middleware after
-        req.tokenData = decoded;
+  //       // make the user data available to middleware after
+  //       req.tokenData = decoded;
 
-        if (verifyRoles) {
-          // load the user and verify the roles
+  //       if (verifyRoles) {
+  //         // load the user and verify the roles
 
-          return app.controllers.user.getById(decoded.sub)
-            .then((user) => {
-              if (!user) {
-                return Bluebird.reject(new app.errors.Unauthorized());
-              }
+  //         return app.controllers.user.getById(decoded.sub)
+  //           .then((user) => {
+  //             if (!user) {
+  //               return Bluebird.reject(new app.errors.Unauthorized());
+  //             }
 
-              var userHasRoles = user.verifyRoles(verifyRoles);
+  //             var userHasRoles = user.verifyRoles(verifyRoles);
 
-              if (!userHasRoles) {
-                return Bluebird.reject(new app.errors.Unauthorized());
-              } else {
-                return true;
-              }
-            })
+  //             if (!userHasRoles) {
+  //               return Bluebird.reject(new app.errors.Unauthorized());
+  //             } else {
+  //               return true;
+  //             }
+  //           })
 
-        } else {
-          return true;
-        }
+  //       } else {
+  //         return true;
+  //       }
 
-      })
-      .then(() => {
-        next();
-      })
-      .catch(next);
-  };
+  //     })
+  //     .then(() => {
+  //       next();
+  //     })
+  //     .catch(next);
+  // };
 };

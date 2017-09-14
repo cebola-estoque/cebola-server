@@ -11,12 +11,26 @@ function cebolaServer(options) {
     throw new Error('mongodbURI is required');
   }
 
+  if (!options.temporaryPassword) {
+    throw new Error('temporaryPassword is required');
+  }
+
+  options.temporarySecret = 'oqiwessqwo';
+
+  if (!options.temporarySecret) {
+    throw new Error('temporarySecret is required');
+  }
+
   if (!options.secret) {
     throw new Error('secret is required');
   }
 
   if (!options.host) {
     throw new Error('host is required');
+  }
+
+  if (!options.corsAllowedOrigins) {
+    throw new Error('corsAllowedOrigins is required');
   }
 
   options.host = options.host.replace(/\/$/, '');
@@ -27,6 +41,9 @@ function cebolaServer(options) {
 
   // create express app instance
   var app = express();
+
+  // expose options onto app
+  app.APP_OPTIONS = options;
 
   // make constants available throughout the application
   app.constants = require('../shared/constants');
@@ -60,6 +77,8 @@ function cebolaServer(options) {
   app.middleware = {};
   app.middleware.authenticate =
     require('./middleware/authenticate').bind(null, app);
+  app.middleware.authorize =
+    require('./middleware/authorize').bind(null, app);
   app.middleware.loadUser =
     require('./middleware/load-user').bind(null, app);
   app.middleware.loadShipment =
@@ -74,16 +93,16 @@ function cebolaServer(options) {
     require('./middleware/load-organization').bind(null, app);
 
   // CORS
-  var corsWhitelist = options.corsWhitelist || [];
-  corsWhitelist = (typeof corsWhitelist === 'string') ?
-    corsWhitelist.split(',') : corsWhitelist;
+  var corsAllowedOrigins = options.corsAllowedOrigins || [];
+  corsAllowedOrigins = (typeof corsAllowedOrigins === 'string') ?
+    corsAllowedOrigins.split(',') : corsAllowedOrigins;
 
   var _corsMiddleware = cors({
     origin: function (origin, cb) {
-      var originIsWhitelisted = (corsWhitelist.indexOf(origin) !== -1);
+      var originIsWhitelisted = (corsAllowedOrigins.indexOf(origin) !== -1);
 
       if (!originIsWhitelisted) {
-        console.warn('request from not-whitelisted origin %s', origin, corsWhitelist);
+        console.warn('request from not-whitelisted origin %s', origin, corsAllowedOrigins);
       }
 
       cb(null, originIsWhitelisted);
@@ -93,26 +112,52 @@ function cebolaServer(options) {
   app.options('*', _corsMiddleware);
   app.use(_corsMiddleware);
 
-
   // define description route
   app.get('/who', function (req, res) {
     res.json({ name: 'inventory-api' });
   });
 
-  // load routes
-  // require('./routes/user')(app, options);
-  // require('./routes/auth')(app, options);
-  require('./routes/organization')(app, options);
-  require('./routes/product-model')(app, options);
-  require('./routes/shipment')(app, options);
-  require('./routes/inventory')(app, options);
-  require('./routes/operation')(app, options);
+  /**
+   * Authorization-related routes are loaded onto
+   * a specific app
+   */
+  var accountApp = express();
+  accountApp.errors      = app.errors;
+  accountApp.controllers = app.controllers;
+  accountApp.middleware  = app.middleware;
+  accountApp.services    = app.services;
+  require('./routes/auth')(accountApp, options);
+  app.use('/account', accountApp);
 
-  require('./routes/file')(app, options);
+  /**
+   * Public routes
+   */
+  var publicApp = express();
+
+  // expose app's properties
+  publicApp.errors      = app.errors;
+  publicApp.controllers = app.controllers;
+  publicApp.middleware  = app.middleware;
+  publicApp.services    = app.services;
+
+  // authentication
+  publicApp.use(app.middleware.authenticate());
+
+  // load routes
+  require('./routes/organization')(publicApp, options);
+  require('./routes/product-model')(publicApp, options);
+  require('./routes/shipment')(publicApp, options);
+  require('./routes/inventory')(publicApp, options);
+  require('./routes/operation')(publicApp, options);
+
+  require('./routes/file')(publicApp, options);
 
   // load error-handlers
-  require('./error-handlers/inventory-api-error')(app, options);
-  require('./error-handlers/mongoose-validation-error')(app, options);
+  require('./error-handlers/inventory-api-error')(publicApp, options);
+  require('./error-handlers/mongoose-validation-error')(publicApp, options);
+
+  // mount public app
+  app.use('/public', publicApp);
 
   return app;
 }

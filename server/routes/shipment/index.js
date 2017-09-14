@@ -5,9 +5,9 @@ const Bluebird   = require('bluebird');
 const aux = require('../../auxiliary');
 
 module.exports = function (app, options) {
-  
-  // TODO: auth
+
   app.post('/shipments/entries',
+    app.middleware.authorize(),
     bodyParser.json(),
     function (req, res, next) {
 
@@ -27,8 +27,8 @@ module.exports = function (app, options) {
     }
   );
   
-  // TODO: auth
   app.get('/shipments/entries',
+    app.middleware.authorize(),
     function (req, res, next) {
       
       var query = {
@@ -44,8 +44,8 @@ module.exports = function (app, options) {
     }
   );
 
-  // TODO: auth
   app.post('/shipments/exits',
+    app.middleware.authorize(),
     bodyParser.json(),
     function (req, res, next) {
 
@@ -67,8 +67,8 @@ module.exports = function (app, options) {
     }
   );
 
-  // TODO: auth
   app.get('/shipments/exits',
+    app.middleware.authorize(),
     function (req, res, next) {
       
       var query = {
@@ -84,14 +84,13 @@ module.exports = function (app, options) {
     }
   );
 
-  // TODO: auth
   /**
    * Retrieves a given shipment's data
    * Optionally returns all shipment records as well
    * 
    */
   app.get('/shipment/:shipmentId',
-    // app.middleware.authenticate(),
+    app.middleware.authorize(),
     app.middleware.loadShipment(),
     function (req, res, next) {
       
@@ -176,7 +175,6 @@ module.exports = function (app, options) {
     }
   );
   
-  // TODO: auth
   // TODO: block update when shipment's status is at `in-progress`
   // TODO: move logic into cebola core
   /**
@@ -184,6 +182,7 @@ module.exports = function (app, options) {
    * 'Allocations' are ignored.
    */
   app.put('/shipment/:shipmentId',
+    app.middleware.authorize(),
     bodyParser.json(),
     app.middleware.loadShipment(),
     function (req, res, next) {
@@ -223,11 +222,11 @@ module.exports = function (app, options) {
     }
   );
   
-  // TODO: auth
   /**
    * Cancels a shipment
    */
   app.delete('/shipment/:shipmentId',
+    app.middleware.authorize(),
     app.middleware.loadShipment(),
     function (req, res, next) {
       
@@ -244,8 +243,8 @@ module.exports = function (app, options) {
     }
   );
   
-  // TODO: auth
   app.post('/shipment/:shipmentId/finish',
+    app.middleware.authorize(),
     app.middleware.loadShipment(),
     bodyParser.json(),
     function (req, res, next) {
