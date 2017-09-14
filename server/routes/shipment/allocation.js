@@ -108,9 +108,7 @@ module.exports = function (app, options) {
       
       var shipment = req.shipment;
       var allocationsToCancel = req.body;
-      
-      console.log(req.body);
-      
+
       if (!allocationsToCancel || !Array.isArray(allocationsToCancel)) {
         next(new app.errors.InvalidOption('allocationsToCancel', 'required'));
         return;

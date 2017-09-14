@@ -6,7 +6,7 @@ module.exports = function (app, options) {
 
   return function (req, res, next) {
 
-    console.log(`Authorize request for ${req.path}`);
+    // console.log(`Authorize request for ${req.path}`);
 
     next();
   };

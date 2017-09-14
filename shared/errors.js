@@ -5,11 +5,11 @@ const util = require('util');
  * Base constructor for errors that happen within InventoryAPI
  * @param {String} message
  */
-function InventoryAPIError(message) {
+function CebolaAPIError(message) {
   Error.call(this, message);
 }
-util.inherits(InventoryAPIError, Error);
-InventoryAPIError.prototype.name = 'InventoryAPIError';
+util.inherits(CebolaAPIError, Error);
+CebolaAPIError.prototype.name = 'CebolaAPIError';
 
 /**
  * Happens when any required option is invalid
@@ -22,48 +22,48 @@ InventoryAPIError.prototype.name = 'InventoryAPIError';
  * @param {String} message
  */
 function InvalidOption(option, kind, message) {
-  InventoryAPIError.call(this, message);
+  CebolaAPIError.call(this, message);
 
   this.option = option;
   this.kind = kind;
 }
-util.inherits(InvalidOption, InventoryAPIError);
+util.inherits(InvalidOption, CebolaAPIError);
 InvalidOption.prototype.name = 'InvalidOption';
 
 
 function ProductNotAvailable(product) {
-  InventoryAPIError.call(this, 'product not available');
+  CebolaAPIError.call(this, 'product not available');
 }
-util.inherits(ProductNotAvailable, InventoryAPIError);
+util.inherits(ProductNotAvailable, CebolaAPIError);
 ProductNotAvailable.prototype.name = 'ProductNotAvailable';
 
 function EmailTaken(email) {
-  InventoryAPIError.call(this, 'email ' + email + ' already in use');
+  CebolaAPIError.call(this, 'email ' + email + ' already in use');
 
   this.email = email;
 }
-util.inherits(EmailTaken, InventoryAPIError);
+util.inherits(EmailTaken, CebolaAPIError);
 EmailTaken.prototype.name = 'EmailTaken';
 
 function Unauthorized() {
-  InventoryAPIError.call(this, 'unauthorized');
+  CebolaAPIError.call(this, 'unauthorized');
 }
-util.inherits(Unauthorized, InventoryAPIError);
+util.inherits(Unauthorized, CebolaAPIError);
 Unauthorized.prototype.name = 'Unauthorized';
 
 function NotFound(resourceName, resourceIdentifier) {
-  InventoryAPIError.call(this, 'resource ' + resourceName + ' not found');
+  CebolaAPIError.call(this, 'resource ' + resourceName + ' not found');
 
   this.resource = resourceName;
   this.identifier = resourceIdentifier;
 }
-util.inherits(NotFound, InventoryAPIError);
+util.inherits(NotFound, CebolaAPIError);
 NotFound.prototype.name = 'NotFound';
 
 /**
  * Expose errors
  */
-exports.InventoryAPIError = InventoryAPIError;
+exports.CebolaAPIError = CebolaAPIError;
 exports.InvalidOption = InvalidOption;
 exports.ProductNotAvailable = ProductNotAvailable;
 exports.EmailTaken = EmailTaken;

@@ -152,12 +152,13 @@ function cebolaServer(options) {
 
   require('./routes/file')(publicApp, options);
 
-  // load error-handlers
-  require('./error-handlers/inventory-api-error')(publicApp, options);
-  require('./error-handlers/mongoose-validation-error')(publicApp, options);
-
   // mount public app
   app.use('/public', publicApp);
+
+  // load error-handlers for the whole app
+  require('./error-handlers/cebola-api-error')(app, options);
+  require('./error-handlers/mongoose-validation-error')(app, options);
+
 
   return app;
 }

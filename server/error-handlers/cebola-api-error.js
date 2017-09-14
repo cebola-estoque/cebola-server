@@ -4,19 +4,19 @@ module.exports = function (app, options) {
 
   app.use(function (err, req, res, next) {
 
-    console.log(err);
+    console.warn(err);
 
-    if (err instanceof errors.InventoryAPIError) {
+    if (err instanceof errors.CebolaAPIError) {
 
       switch (err.name) {
         case 'InvalidOption':
           res.status(400).json(err);
           break;
-        case 'EmailTaken':
-          res.status(400).json(err);
-          break;
         case 'Unauthorized':
           res.status(401).json(err);
+          break;
+        case 'ProductNotAvailable':
+          res.status(400).json(err);
           break;
         default:
           next(err);

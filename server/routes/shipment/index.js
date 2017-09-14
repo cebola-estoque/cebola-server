@@ -250,9 +250,8 @@ module.exports = function (app, options) {
     function (req, res, next) {
       
       var shipment = req.shipment;
-      var annotations = req.body.annotations;
       
-      return app.controllers.shipment.finish(shipment, annotations)
+      return app.controllers.shipment.finish(shipment)
         .then((shipment) => {
           res.json(shipment);
         })
