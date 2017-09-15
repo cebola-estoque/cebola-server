@@ -101,7 +101,8 @@ module.exports = function (app, options) {
       if (withRecords) {
         
         app.services.cebola.record.listByShipment(shipment, {
-          loadFullProductSourceShipment: true
+          loadFullProductSourceShipment: true,
+          loadFullProductModel: true,
         })
         .then((records) => {
           var shipmentData = shipment.toJSON();
