@@ -14,7 +14,7 @@
     "bcrypt": "^0.8.7",
     "bluebird": "^3.4.1",
     "body-parser": "^1.15.2",
-    "cebola": "^0.5.0",
+    "cebola": "^0.6.0",
     "cors": "^2.8.4",
     "express": "^4.14.0",
     "express-jwt": "^5.3.0",
