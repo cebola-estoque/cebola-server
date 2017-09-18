@@ -25,6 +25,8 @@ gulp.task('nodemon', function () {
       AWS_S3_BUCKET: 'cebola-dev',
       TEMPORARY_PASSWORD: 'senhateste',
       TEMPORARY_SECRET: 'TEST_TEMPORARY_SECRET',
+      SENTRY_DSN: 'https://829d9e452a2841dfb005cd4475e32c3c:3e0dba70a6804235b4eca4fd15cad5dd@sentry.io/217993',
+      SENTRY_ENVIRONMENT: 'dev-local',
     },
     ext: 'js',
     ignore: [

@@ -16,6 +16,9 @@ var options = {
   temporaryPassword: process.env.TEMPORARY_PASSWORD,
   temporarySecret: process.env.TEMPORARY_SECRET,
 
+  sentryDSN: process.env.SENTRY_DSN,
+  sentryEnvironment: process.env.SENTRY_ENVIRONMENT,
+
   awsS3Bucket: process.env.AWS_S3_BUCKET,
 };
 

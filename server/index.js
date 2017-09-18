@@ -1,6 +1,7 @@
 // third-party
 const express = require('express');
 const cors    = require('cors');
+const Raven   = require('raven');
 
 /**
  * Function that instantiates the application
@@ -41,6 +42,18 @@ function cebolaServer(options) {
 
   // create express app instance
   var app = express();
+
+  // if sentryDSN is set, enable raven requestHandler
+  if (options.sentryDSN) {
+
+    let sentryConfig = {
+      environment: options.sentryEnvironment,
+      release: require('../package.json').version,
+    }
+
+    Raven.config(options.sentryDSN, sentryConfig).install();
+    app.use(Raven.requestHandler());
+  }
 
   // expose options onto app
   app.APP_OPTIONS = options;
@@ -156,6 +169,10 @@ function cebolaServer(options) {
   app.use('/public', publicApp);
 
   // load error-handlers for the whole app
+  // if sentryDSN is set, enable raven errorHandler
+  if (options.sentryDSN) {
+    app.use(Raven.errorHandler());
+  }
   require('./error-handlers/cebola-api-error')(app, options);
   require('./error-handlers/mongoose-validation-error')(app, options);
 
