@@ -8,13 +8,17 @@ module.exports = function (app, options) {
         size: Number,
         mimetype: String,
       },
-      // 'product.unitPrice': {
-      //   value: Number,
-      //   currency: {
-      //     type: String,
-      //     default: 'BRL',
-      //   },
-      // },
+    });
+
+    allocationSchema.pre('validate', function (next) {
+      /**
+       * Set default product.unitPrice.currency
+       */
+      this.product = this.product || {};
+      this.product.unitPrice = this.product.unitPrice || {};
+      this.product.unitPrice.currency = this.product.unitPrice.currency || 'BRL';
+
+      next();
     });
   };
 };
