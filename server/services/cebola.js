@@ -1,4 +1,6 @@
+// third-party
 const cebola = require('cebola');
+const Bluebird = require('bluebird');
 
 module.exports = function (app, options) {
 
@@ -18,6 +20,5 @@ module.exports = function (app, options) {
     }
   );
 
-  app.services.cebola = cebolaSvc;
-
+  return Bluebird.resolve(cebolaSvc);
 };

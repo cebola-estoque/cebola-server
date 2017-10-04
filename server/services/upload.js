@@ -41,5 +41,5 @@ module.exports = function (app, options) {
     storage: s3Storage,
   });
 
-  app.services.upload = uploadSvc;
+  return uploadSvc;
 };

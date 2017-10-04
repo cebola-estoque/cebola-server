@@ -8,22 +8,39 @@ mongoose.Promise = Bluebird;
 module.exports = function (app, options) {
   
   var mongooseService = {};
-  app.services.mongoose = mongooseService;
 
-  // create a connection to the database
-  var conn = mongoose.createConnection(options.mongodbURI);
-  mongooseService.connection = conn;
+  return new Bluebird((resolve, reject) => {
+    // create a connection to the database
+    var conn = mongoose.createConnection(options.mongodbURI);
+    
+    mongooseService.connection = conn;
+    
+    conn.once('connected', _resolve);
+    conn.once('error', _reject);
+    conn.once('disconnected', _reject);
 
-  // load models
-  mongooseService.models = {};
-  mongooseService.models.User =
-    require('../models/user')(conn, app, options);
-  // mongooseService.models.OrganizationContact =
-  //   require('../models/organization-contact')(conn, app, options);
-  // mongooseService.models.ProductModel =
-  //   require('../models/product-model')(conn, app, options);
-  // mongooseService.models.Operation =
-  //   require('../models/operation')(conn, app, options);
-  // mongooseService.models.Shipment =
-  //   require('../models/shipment')(conn, app, options);
+    function off () {
+      conn.removeListener('connected', _resolve);
+      conn.removeListener('error', _reject);
+      conn.removeListener('disconnected', _reject);
+    }
+
+    function _resolve () {
+      off();
+      resolve();
+    }
+
+    function _reject () {
+      off();
+      reject();
+    }
+  })
+  .then(() => {
+    // load models
+    mongooseService.models = {};
+    mongooseService.models.User =
+      require('../models/user')(mongooseService.connection, app, options);
+
+    return mongooseService;
+  });
 };
