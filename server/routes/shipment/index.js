@@ -95,14 +95,19 @@ module.exports = function (app, options) {
     function (req, res, next) {
       
       var withRecords = req.query.withRecords || true;
+      var withAllocationsProductOperations = req.query.withAllocationsProductOperations || true;
       
       var shipment = req.shipment;
-      
+
+      var loadPromise = Bluebird.resolve(shipment);
+
       if (withRecords) {
-        
-        app.services.cebola.record.listByShipment(shipment, {
-          loadFullProductSourceShipment: true,
-          loadFullProductModel: true,
+        loadPromise = loadPromise.then((shipment) => {
+          return app.services.cebola.record.listByShipment(shipment, {
+            loadFullProductSourceShipment: true,
+            loadFullProductModel: true,
+            loadProductOperations: true,
+          })
         })
         .then((records) => {
           var shipmentData = shipment.toJSON();
@@ -165,14 +170,54 @@ module.exports = function (app, options) {
                      (!op.sourceAllocation || !op.sourceAllocation._id);
             })
           };
-          
+
+          return shipmentData;
+        })
+      }
+
+      if (withRecords && withAllocationsProductOperations) {
+
+        /**
+         * TODO: optimize
+         *
+         * This is by far not the most efficient way of querying,
+         * as for each allocation one db query is made.
+         *
+         * There should be a way of querying for all operations related
+         * to a list of products.
+         */
+
+        loadPromise = loadPromise.then((shipmentData) => {
+
+          var loadActivePromise = Bluebird.all(shipmentData.allocations.active.map((activeAllocation) => {
+            return app.services.cebola.operation.listByProduct(activeAllocation.product);
+          }))
+          .then((allocationProductOperations) => {
+            allocationProductOperations.forEach((ops, index) => {
+              shipmentData.allocations.active[index].product.operations = ops;
+            });
+          });
+
+          var loadFinishedPromise = Bluebird.all(shipmentData.allocations.finished.map((finishedAllocation) => {
+            return app.services.cebola.operation.listByProduct(finishedAllocation.product);
+          }))
+          .then((allocationProductOperations) => {
+            allocationProductOperations.forEach((ops, index) => {
+              shipmentData.allocations.finished[index].product.operations = ops;
+            });
+          });
+
+          return Bluebird.all([loadActivePromise, loadFinishedPromise]).then(() => {
+            return shipmentData;
+          });
+        });
+      }
+
+      loadPromise
+        .then((shipmentData) => {
           res.json(shipmentData);
         })
         .catch(next);
-          
-      } else {
-        res.json(shipment);
-      }
     }
   );
   
